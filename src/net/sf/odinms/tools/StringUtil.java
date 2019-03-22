@@ -11,18 +11,9 @@ public class StringUtil {
         return builder.toString();
     }
 
-    public static int getlength(String str){
-         int i,t=0;
-         byte[] bt = str.getBytes();
-         for(i=1;i<=bt.length;i++){
-         if (bt[i-1]<0) {t=t+2;i++;}
-         else t=t+1;
-         }
-         return t;
-         }
-         public static String getRightPaddedStr(String in, char padchar, int length) {
-                StringBuilder builder = new StringBuilder(in);
-                for (int x = getlength(in); x < length; x++) {
+    public static String getRightPaddedStr(String in, char padchar, int length) {
+        StringBuilder builder = new StringBuilder(in);
+        for (int x = in.length(); x < length; x++) {
             builder.append(padchar);
         }
         return builder.toString();

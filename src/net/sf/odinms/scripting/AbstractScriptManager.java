@@ -1,13 +1,7 @@
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.odinms.scripting;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.BufferedReader;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -46,18 +40,8 @@ public abstract class AbstractScriptManager {
                     c.setScriptEngine(path, engine);
                 }
                 FileReader fr = new FileReader(scriptFile);
-                BufferedReader br=new BufferedReader(fr);
-String line=br.readLine();
-StringBuffer js=new StringBuffer();
-while(line!=null){
-    js.append(line);
-    js.append("\r\n");
-    line=br.readLine();
-}
-
-engine.eval(js.toString());
-br.close();
-fr.close();
+                engine.eval(fr);
+                fr.close();
             }
             return (Invocable) engine;
         } catch (Exception e) {

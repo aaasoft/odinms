@@ -1,7 +1,6 @@
 package net.sf.odinms.net.channel.handler;
 
 import java.net.InetAddress;
-
 import net.sf.odinms.client.MapleCharacter;
 import net.sf.odinms.client.MapleClient;
 import net.sf.odinms.net.AbstractMaplePacketHandler;
@@ -13,8 +12,6 @@ import net.sf.odinms.tools.MaplePacketCreator;
 import net.sf.odinms.tools.data.input.SeekableLittleEndianAccessor;
 
 public class ChangeMapHandler extends AbstractMaplePacketHandler {
-
-    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ChangeMapHandler.class);
 
     @Override
     public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
@@ -36,10 +33,8 @@ public class ChangeMapHandler extends AbstractMaplePacketHandler {
         } else {
             byte type = slea.readByte(); // 1 = from dying 2 = regular portals
             int targetid = slea.readInt(); // FF FF FF FF
-
             String startwp = slea.readMapleAsciiString();
             MaplePortal portal = c.getPlayer().getMap().getPortal(startwp);
-
             MapleCharacter player = c.getPlayer();
             if (targetid != -1 && !c.getPlayer().isAlive()) {
                 boolean executeStandardPath = true;
@@ -62,13 +57,13 @@ public class ChangeMapHandler extends AbstractMaplePacketHandler {
                 MaplePortal pto = to.getPortal(0);
                 player.changeMap(to, pto);
             } else if (targetid != -1 && !c.getPlayer().isGM()) {
-                log.warn("Player {} attempted Map jumping without being a GM", c.getPlayer().getName());
+                //log.warn("Player {} attempted Map jumping without being a GM", c.getPlayer().getName());
             } else {
                 if (portal != null) {
                     portal.enterPortal(c);
                 } else {
                     c.getSession().write(MaplePacketCreator.enableActions());
-                    log.warn("Portal {} not found on map {}", startwp, c.getPlayer().getMap().getId());
+                    //log.warn("Portal {} not found on map {}", startwp, c.getPlayer().getMap().getId());
                 }
             }
         }

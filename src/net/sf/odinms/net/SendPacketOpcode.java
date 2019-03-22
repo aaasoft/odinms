@@ -9,7 +9,6 @@ public enum SendPacketOpcode implements WritableIntValueHolder {
     // GENERAL
 
     PING, // 0x11
-    DUEY,
     // LOGIN
     LOGIN_STATUS, // 1
     PIN_OPERATION, // 6
@@ -129,10 +128,12 @@ public enum SendPacketOpcode implements WritableIntValueHolder {
     ZAKUM_SHRINE,
     BOAT_EFFECT,
     CHALKBOARD, SEND_TV, REMOVE_TV, ENABLE_TV,
+    DUEY,
     UPDATE_MOUNT, MTS_OPEN,
     MTS_OPERATION,
     MTS_OPERATION2,
     GET_MTS_TOKENS,
+    TROCK_LOCATIONS,
     MONSTER_CARNIVAL_START,
     MONSTER_CARNIVAL_OBTAINED_CP,
     MONSTER_CARNIVAL_PARTY_CP,

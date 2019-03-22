@@ -18,16 +18,10 @@ public class UseCatchItemHandler extends AbstractMaplePacketHandler {
 	}
 
 	public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
-		// 4A 00
-		// B9 F4 8B 00 // unknown
-		// 01 00 // success??
-		// 32 A3 22 00 // itemid
-		// 38 37 2B 00 // monsterid
 		slea.readInt();
 		slea.readShort();
 		int itemid = slea.readInt();
 		int monsterid = slea.readInt();
-		
 		MapleMonster mob = c.getPlayer().getMap().getMonsterByOid(monsterid);
 		if (mob != null) {
 			if (mob.getHp() <= mob.getMaxHp() / 2) {

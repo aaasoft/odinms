@@ -21,12 +21,10 @@ public class CouponCodeHandler extends AbstractMaplePacketHandler {
         boolean validcode = false;
         int type = -1;
         int item = -1;
-
         try {
             validcode = c.getPlayer().getNXCodeValid(code.toUpperCase(), validcode);
         } catch (SQLException e) {
         }
-
         if (validcode) {
             try {
                 type = c.getPlayer().getNXCodeType(code);
@@ -44,29 +42,26 @@ public class CouponCodeHandler extends AbstractMaplePacketHandler {
             }
             switch (type) {
                 case 0:
-		    c.getPlayer().modifyCSPoints(4, item);
-		    break;
                 case 1:
                 case 2:
                     c.getPlayer().modifyCSPoints(type, item);
                     break;
                 case 3:
-                    c.getPlayer().modifyCSPoints(4, item);
+                    c.getPlayer().modifyCSPoints(0, item);
                     c.getPlayer().modifyCSPoints(2, (item / 5000));
                     break;
                 case 4:
-                    MapleInventoryManipulator.addById(c, item, (short) 1, "一个物品是取自点卷.", null, -1);
+                    MapleInventoryManipulator.addById(c, item, (short) 1, "An item was obtain from a coupon.", null, -1);
                     c.getSession().write(MaplePacketCreator.showCouponRedeemedItem(item));
                     break;
                 case 5:
-                    c.getPlayer().modifyCSPoints(4, item);
+                    c.getPlayer().modifyCSPoints(0, item);
                     break;
-        }
+            }
             c.getSession().write(MaplePacketCreator.showNXMapleTokens(c.getPlayer()));
         } else {
             c.getSession().write(MaplePacketCreator.wrongCouponCode());
         }
-
         c.getSession().write(MaplePacketCreator.enableCSorMTS());
         c.getSession().write(MaplePacketCreator.enableCSUse1());
         c.getSession().write(MaplePacketCreator.enableCSUse2());

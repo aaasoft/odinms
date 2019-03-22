@@ -8,7 +8,6 @@ import net.sf.odinms.scripting.npc.NPCScriptManager;
 import net.sf.odinms.scripting.npc.Marriage;
 
 /**
- * Ring actions o.O
  * @author Jvlaple
  */
 

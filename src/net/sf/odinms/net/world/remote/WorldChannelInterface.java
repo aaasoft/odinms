@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import net.sf.odinms.net.channel.remote.ChannelWorldInterface;
 import net.sf.odinms.net.world.CharacterIdChannelPair;
 import net.sf.odinms.net.world.MapleMessenger;

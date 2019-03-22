@@ -422,9 +422,7 @@ public class MapleItemInformationProvider {
     }
 
     public boolean isShield(int itemId) {
-        int cat = itemId / 10000;
-        cat = cat % 100;
-        return cat == 9;
+        return (itemId / 10000) % 100 == 9;
     }
 
     public boolean isEquip(int itemId) {
@@ -441,35 +439,6 @@ public class MapleItemInformationProvider {
         }
         return false;
 
-    }
-
-    public static void editEquipById(MapleClient c, int itemid, int newval) {
-        editEquipById(c, itemid, (short) newval);
-    }
-
-    public static void editEquipById(MapleClient c, int itemid, short newval) {
-        if (!MapleItemInformationProvider.getInstance().isEquip(itemid)) {
-            return;
-        }
-        List<IItem> equips = c.getPlayer().getInventory(MapleInventoryType.EQUIP).listById(itemid);
-        List<IItem> equipped = c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).listById(itemid);
-        if (equips.size() == 0 && equipped.size() == 0) {
-            return;
-        }
-        for (IItem itm : equips) {
-            Equip e = (Equip) itm;
-            e.setStr(newval);
-            e.setDex(newval);
-            e.setInt(newval);
-            e.setLuk(newval);
-        }
-        for (IItem itm : equipped) {
-            Equip e = (Equip) itm;
-            e.setStr(newval);
-            e.setDex(newval);
-            e.setInt(newval);
-            e.setLuk(newval);
-        }
     }
 
     public IItem scrollEquipWithId(IItem equip, int scrollId, boolean usingWhiteScroll, boolean isGM) {
@@ -756,7 +725,7 @@ public class MapleItemInformationProvider {
     }
 
     public boolean isTownScroll(int itemId) {
-        return (itemId >= 2030000 && itemId < 2030020);
+        return (itemId >= 2030000 && itemId < 2030021);
     }
 
     public boolean isGun(int itemId) {

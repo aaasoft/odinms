@@ -1,53 +1,69 @@
-// Jiongorz. 娱乐端 原端【ThePack82】
-// QQ:307586193
-// 囧囧技术交流论坛:http://bbs.jiongorz.com 【已开放】
-// Jiongorz. 娱乐端 编译源Src 请保留信息、版权
-// 此端已大部分修改 版权为：Jiongorz.©
+/*
+	This file is part of the OdinMS Maple Story Server
+    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
+                       Matthias Butz <matze@odinms.de>
+                       Jan Christian Meyer <vimes@odinms.de>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License version 3
+    as published by the Free Software Foundation. You may not use, modify
+    or distribute this program under any other version of the
+    GNU Affero General Public License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 package net.sf.odinms.server;
 
 import net.sf.odinms.client.IItem;
 
-// Referenced classes of package net.sf.odinms.server:
-//			MaplePlayerShop
-
-public class MaplePlayerShopItem
-{
-
+/**
+ *
+ * @author Matze
+ */
+public class MaplePlayerShopItem {
+	
 	private IItem item;
 	private MaplePlayerShop shop;
 	private short bundles;
 	private int price;
-
-	public MaplePlayerShopItem(MaplePlayerShop shop, IItem item, short bundles, int price)
-	{
+	
+	public MaplePlayerShopItem(MaplePlayerShop shop, IItem item, short bundles, int price) {
 		this.shop = shop;
 		this.item = item;
 		this.bundles = bundles;
 		this.price = price;
 	}
 
-	public IItem getItem()
-	{
+	public IItem getItem() {
 		return item;
 	}
 
-	public MaplePlayerShop getShop()
-	{
+	public MaplePlayerShop getShop() {
 		return shop;
 	}
 
-	public short getBundles()
-	{
+	public short getBundles() {
 		return bundles;
 	}
 
-	public int getPrice()
-	{
+	public int getPrice() {
 		return price;
 	}
 
-	public void setBundles(short bundles)
-	{
+	public void setBundles(short bundles) {
 		this.bundles = bundles;
 	}
+
 }

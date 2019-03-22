@@ -3,7 +3,6 @@ package net.sf.odinms.server;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import net.sf.odinms.client.IItem;
 import net.sf.odinms.client.MapleCharacter;
 import net.sf.odinms.client.MapleClient;
@@ -26,9 +25,7 @@ public class MapleMiniGame extends AbstractMapleMapObject {
     private List<Integer> list5x4 = new ArrayList<Integer>();
     private List<Integer> list6x5 = new ArrayList<Integer>();
     private List<MaplePlayerShopItem> items = new ArrayList<MaplePlayerShopItem>();
-    private MapleCharacter slot1 = null;
-    private MapleCharacter slot2 = null;
-    private MapleCharacter slot3 = null;
+    private MapleCharacter slot1 = null, slot2 = null, slot3 = null;
     private String description;
     boolean ready = false;
     int loser = 1;
@@ -159,7 +156,7 @@ public class MapleMiniGame extends AbstractMapleMapObject {
 
     public void setVisitorPoints() {
         visitorpoints++;
-        if ((ownerpoints + visitorpoints) == matchestowin) {
+        if (ownerpoints + visitorpoints == matchestowin) {
             if (ownerpoints > visitorpoints) {
                 ownerpoints = 0;
                 visitorpoints = 0;
@@ -195,75 +192,24 @@ public class MapleMiniGame extends AbstractMapleMapObject {
     }
 
     public void setGameType(String game) {
-        GameType = game;
-        if (game == "matchcard") {
+        if (GameType.equals("matchcard")) {
             if (matchestowin == 6) {
-                list4x3.add(0);
-                list4x3.add(0);
-                list4x3.add(1);
-                list4x3.add(1);
-                list4x3.add(2);
-                list4x3.add(2);
-                list4x3.add(3);
-                list4x3.add(3);
-                list4x3.add(4);
-                list4x3.add(4);
-                list4x3.add(5);
-                list4x3.add(5);
+                for (int i = 0; i < 6; i++) {
+                    list4x3.add(i);
+                    list4x3.add(i);
+                }
             }
             if (matchestowin == 10) {
-                list5x4.add(0);
-                list5x4.add(0);
-                list5x4.add(1);
-                list5x4.add(1);
-                list5x4.add(2);
-                list5x4.add(2);
-                list5x4.add(3);
-                list5x4.add(3);
-                list5x4.add(4);
-                list5x4.add(4);
-                list5x4.add(5);
-                list5x4.add(5);
-                list5x4.add(6);
-                list5x4.add(6);
-                list5x4.add(7);
-                list5x4.add(7);
-                list5x4.add(8);
-                list5x4.add(8);
-                list5x4.add(9);
-                list5x4.add(9);
+                for (int i = 0; i < 10; i++) {
+                    list5x4.add(i);
+                    list5x4.add(i);
+                }
             }
             if (matchestowin == 15) {
-                list6x5.add(0);
-                list6x5.add(0);
-                list6x5.add(1);
-                list6x5.add(1);
-                list6x5.add(2);
-                list6x5.add(2);
-                list6x5.add(3);
-                list6x5.add(3);
-                list6x5.add(4);
-                list6x5.add(4);
-                list6x5.add(5);
-                list6x5.add(5);
-                list6x5.add(6);
-                list6x5.add(6);
-                list6x5.add(7);
-                list6x5.add(7);
-                list6x5.add(8);
-                list6x5.add(8);
-                list6x5.add(9);
-                list6x5.add(9);
-                list6x5.add(10);
-                list6x5.add(10);
-                list6x5.add(11);
-                list6x5.add(11);
-                list6x5.add(12);
-                list6x5.add(12);
-                list6x5.add(13);
-                list6x5.add(13);
-                list6x5.add(14);
-                list6x5.add(14);
+                for (int i = 0; i < 15; i++) {
+                    list6x5.add(i);
+                    list6x5.add(i);
+                }
             }
         }
     }

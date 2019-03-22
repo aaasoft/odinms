@@ -39,7 +39,6 @@ public class MaplePartyCharacter implements Serializable {
 	
 	public MaplePartyCharacter() {
 		this.name = "";
-		//default values for everything o.o
 	}
 
 	public int getLevel() {

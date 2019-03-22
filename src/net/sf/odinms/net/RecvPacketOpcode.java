@@ -15,7 +15,6 @@ public enum RecvPacketOpcode implements WritableIntValueHolder {
     CHARLIST_REQUEST,
     CHAR_SELECT,
     CHECK_CHAR_NAME,
-    DUEY_ACTION,
     CREATE_CHAR,
     DELETE_CHAR,
     LOGIN_PASSWORD,
@@ -101,9 +100,13 @@ public enum RecvPacketOpcode implements WritableIntValueHolder {
     MAPLETV,
     PLAYER_UPDATE,
     USE_CATCH_ITEM,
-    CLOSE_CHALKBOARD, RING_ACTION,
-    MONSTER_CARNIVAL, MTS_OP,
+    CLOSE_CHALKBOARD,
+    RING_ACTION,
+    DUEY_ACTION,
+    MONSTER_CARNIVAL,
+    MTS_OP,
     USE_MOUNT_FOOD,
+    TROCK_ADD_MAP,
     SPOUSECHAT,;
     private int code = -2;
 

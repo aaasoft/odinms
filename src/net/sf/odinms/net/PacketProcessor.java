@@ -4,15 +4,14 @@ import net.sf.odinms.net.handler.KeepAliveHandler;
 import net.sf.odinms.net.handler.LoginRequiringNoOpHandler;
 import net.sf.odinms.net.channel.handler.*;
 import net.sf.odinms.net.login.handler.*;
-
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class PacketProcessor {
 
-    private static Logger log = LoggerFactory.getLogger(PacketProcessor.class);
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(PacketProcessor.class);
 
     public enum Mode {
+
         LOGINSERVER,
         CHANNELSERVER
     };
@@ -44,7 +43,7 @@ public final class PacketProcessor {
         try {
             handlers[code.getValue()] = handler;
         } catch (ArrayIndexOutOfBoundsException aiobe) {
-            log.error("没有错误~放心进吧~成功加载");
+            log.error("Check your Recv Packet Opcodes - Something is wrong");
         }
     }
 
@@ -109,7 +108,6 @@ public final class PacketProcessor {
             registerHandler(RecvPacketOpcode.PLAYER_INTERACTION, new PlayerInteractionHandler());
             registerHandler(RecvPacketOpcode.DISTRIBUTE_AP, new DistributeAPHandler());
             registerHandler(RecvPacketOpcode.DISTRIBUTE_SP, new DistributeSPHandler());
-            registerHandler(RecvPacketOpcode.DUEY_ACTION, new DueyHandler());
             registerHandler(RecvPacketOpcode.CHANGE_KEYMAP, new KeymapChangeHandler());
             registerHandler(RecvPacketOpcode.CHANGE_MAP_SPECIAL, new ChangeMapSpecialHandler());
             registerHandler(RecvPacketOpcode.STORAGE, new StorageHandler());

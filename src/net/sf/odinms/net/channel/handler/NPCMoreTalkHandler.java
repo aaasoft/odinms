@@ -16,7 +16,6 @@ public class NPCMoreTalkHandler extends AbstractMaplePacketHandler {
 	public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
 		byte lastMsg = slea.readByte(); // 00 (last msg type I think)
 		byte action = slea.readByte(); // 00 = end chat, 01 == follow
-
 		if (lastMsg == 2) {
 			if (action != 0) {
 				String returnText = slea.readMapleAsciiString();

@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
 import net.sf.odinms.client.ExpTable;
 import net.sf.odinms.client.ISkill;
 import net.sf.odinms.client.MapleCharacter;
@@ -33,10 +32,10 @@ import net.sf.odinms.tools.data.input.SeekableLittleEndianAccessor;
 public class UseCashItemHandler extends AbstractMaplePacketHandler {
 
     private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UseCashItemHandler.class);
-    private long lasttime,nowtime;
 
     @Override
     public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
+        MapleCharacter player = c.getPlayer();
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
         byte mode = slea.readByte();
         slea.readByte();
@@ -45,7 +44,6 @@ public class UseCashItemHandler extends AbstractMaplePacketHandler {
         try {
             if (itemType == 505) { // AP/SP reset
                 if (itemId > 5050000) {
-                    MapleCharacter player = c.getPlayer();
                     int SPTo = slea.readInt();
                     int SPFrom = slea.readInt();
                     ISkill skillSPTo = SkillFactory.getSkill(SPTo);
@@ -264,71 +262,64 @@ public class UseCashItemHandler extends AbstractMaplePacketHandler {
                 }
                 MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
             } else if (itemType == 507) {
-                           MapleCharacter player = c.getPlayer();
-                        switch (itemId / 1000 % 10) {
-                            case 1: // Megaphone
-                                if (player.getLevel() >= 10) {
-                                    player.getMap().broadcastMessage(MaplePacketCreator.serverNotice(2, player.getName() + " : " + slea.readMapleAsciiString()));
-                                } else { // Client does it but ehh..
-                                    player.dropMessage("You may not use this until you're level 10");
-                                }
-                                break;
-                            case 2: // Super megaphone
-                                c.getChannelServer().getWorldInterface().broadcastMessage(null, MaplePacketCreator.serverNotice(3, c.getChannel(), player.getName() + " : " + slea.readMapleAsciiString(), (slea.readByte() != 0)).getBytes());
-                                break;
-                            case 3: // Heart megaphone
-                                log.info("Unhandled Megaphone Packet : " + slea.toString());
-                                log.info("Megaphone ID: " + itemId);
-                                break;
-                            case 4: // Skull megaphone
-                                log.info("Unhandled Megaphone Packet : " + slea.toString());
-                                log.info("Megaphone ID: " + itemId);
-                                break;
-                            case 5: // Maple TV
-                                int tvType = itemId % 10;
-                                boolean megassenger = false;
-                                boolean ear = false;
-                                MapleCharacter victim = null;
-
-                                if (tvType != 1) { // 1 is the odd one out since it doesnt allow 2 players.
-                                    if (tvType >= 3) {
-                                        megassenger = true;
-                                        if (tvType == 3) {
-                                            slea.readByte();
-                                        }
-                                        ear = 1 == slea.readByte();
-                                    } else if (tvType != 2) {
-                                        slea.readByte();
-                                    }
-                                    if (tvType != 4) {
-                                        victim = c.getChannelServer().getPlayerStorage().getCharacterByName(slea.readMapleAsciiString());
-                                    }
-                                }
-                                List<String> messages = new LinkedList<String>();
-                                StringBuilder builder = new StringBuilder();
-                                for (int i = 0; i < 5; i++) {
-                                    String message = slea.readMapleAsciiString();
-                                    if (megassenger) {
-                                        builder.append(" ");
-                                        builder.append(message); // builder.append(" "+message);
-                                    }
-                                    messages.add(message);
-                                }
-                                slea.readInt(); // some random shit
-                                if (megassenger) {
-                                    c.getChannelServer().getWorldInterface().broadcastMessage(null, MaplePacketCreator.serverNotice(3, c.getChannel(), player.getName() + " : " + builder.toString(), ear).getBytes());
-                                }
-
-                                if (!MapleTVEffect.isActive()) {
-                                    new MapleTVEffect(player, victim, messages, tvType);
-                                    MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
-                                } else {
-                                    player.dropMessage("MapleTV is already in use");
-                                }
-                                break;
+                switch (itemId / 1000 % 10) {
+                    case 1: // Megaphone
+                        if (player.getLevel() > 9) {
+                            player.getMap().broadcastMessage(MaplePacketCreator.serverNotice(2, player.getName() + " : " + slea.readMapleAsciiString()));
+                        } else {
+                            player.dropMessage("You may not use this until you're level 10");
                         }
-                        MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
-                  } else if (itemType == 509) {
+                        break;
+                    case 2: // Super megaphone
+                        c.getChannelServer().getWorldInterface().broadcastMessage(null, MaplePacketCreator.serverNotice(3, c.getChannel(), player.getName() + " : " + slea.readMapleAsciiString(), (slea.readByte() != 0)).getBytes());
+                        break;
+                    case 3: // Heart megaphone
+                    case 4: // Skull megaphone
+                        break;
+                    case 5: // Maple TV
+                        int tvType = itemId % 10;
+                        boolean megassenger = false;
+                        boolean ear = false;
+                        MapleCharacter victim = null;
+                        if (tvType != 1) { // 1 is the odd one out since it doesnt allow 2 players.
+                            if (tvType >= 3) {
+                                megassenger = true;
+                                if (tvType == 3) {
+                                    slea.readByte();
+                                }
+                                ear = 1 == slea.readByte();
+                            } else if (tvType != 2) {
+                                slea.readByte();
+                            }
+                            if (tvType != 4) {
+                                victim = c.getChannelServer().getPlayerStorage().getCharacterByName(slea.readMapleAsciiString());
+                            }
+                        }
+                        List<String> messages = new LinkedList<String>();
+                        StringBuilder builder = new StringBuilder();
+                        for (int i = 0; i < 5; i++) {
+                            String message = slea.readMapleAsciiString();
+                            if (megassenger) {
+                                builder.append(" ");
+                                builder.append(message); // builder.append(" "+message);
+                            }
+                            messages.add(message);
+                        }
+                        slea.readInt(); // some random shit
+                        if (megassenger) {
+                            c.getChannelServer().getWorldInterface().broadcastMessage(null, MaplePacketCreator.serverNotice(3, c.getChannel(), player.getName() + " : " + builder.toString(), ear).getBytes());
+                        }
+                        if (!MapleTVEffect.isActive()) {
+                            new MapleTVEffect(player, victim, messages, tvType);
+                            MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
+                        } else {
+                            player.dropMessage("MapleTV is already in use");
+                            return;
+                        }
+                        break;
+                }
+                MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
+            } else if (itemType == 509) {
                 String sendTo = slea.readMapleAsciiString();
                 String msg = slea.readMapleAsciiString();
                 try {
@@ -355,19 +346,18 @@ public class UseCashItemHandler extends AbstractMaplePacketHandler {
                 c.getSession().write(MaplePacketCreator.enableActions());
                 c.getPlayer().getMap().broadcastMessage(c.getPlayer(), MaplePacketCreator.changePetName(c.getPlayer(), newName, 1), true);
                 MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
-            }
-            if (itemType == 504) {
+            } else if (itemType == 504) { // vip teleport rock
                 byte rocktype = slea.readByte();
-                ServernoticeMapleClientMessageCallback sn = new ServernoticeMapleClientMessageCallback(1, c);
+                MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
                 if (rocktype == 0x00) {
                     int mapId = slea.readInt();
                     MapleMap target = c.getChannelServer().getMapFactory().getMap(mapId);
                     MaplePortal targetPortal = target.getPortal(0);
-                    if (target.getId() != 180000000 || target.getId() < 100000000) {
+                    if (target.getForcedReturnId() == 999999999) {//Makes sure this map doesn't have a forced return map
                         c.getPlayer().changeMap(target, targetPortal);
                     } else {
-                        MapleInventoryManipulator.addById(c, itemId, (short) 1, "Error");
-                        sn.dropMessage("Player could not be found.");
+                        MapleInventoryManipulator.addById(c, itemId, (short) 1, "Teleport Rock Error (Not found)");
+                        new ServernoticeMapleClientMessageCallback(1, c).dropMessage("Either the player could not be found or you were trying to teleport to an illegal location.");
                         c.getSession().write(MaplePacketCreator.enableActions());
                     }
                 } else {
@@ -376,17 +366,17 @@ public class UseCashItemHandler extends AbstractMaplePacketHandler {
                     if (victim != null) {
                         MapleMap target = victim.getMap();
                         WorldLocation loc = c.getChannelServer().getWorldInterface().getLocation(name);
-                        if (loc.map != 180000000 || loc.map < 100000000) {
+                        if (c.getChannelServer().getMapFactory().getMap(loc.map).getForcedReturnId() == 999999999 || c.getChannelServer().getMapFactory().getMap(loc.map).getId() < 100000000) {//This doesn't allow tele to GM map, zakum and etc...
                             if (!victim.isHidden()) {
                                 c.getPlayer().changeMap(target, target.findClosestSpawnpoint(victim.getPosition()));
                             } else {
                                 MapleInventoryManipulator.addById(c, itemId, (short) 1, "Teleport Rock Error (Not found)");
-                                sn.dropMessage("Player could not be found.");
+                                new ServernoticeMapleClientMessageCallback(1, c).dropMessage("Either the player could not be found or you were trying to teleport to an illegal location.");
                                 c.getSession().write(MaplePacketCreator.enableActions());
                             }
                         } else {
                             MapleInventoryManipulator.addById(c, itemId, (short) 1, "Teleport Rock Error (Can't Teleport)");
-                            sn.dropMessage("You cannot teleport to this map.");
+                            new ServernoticeMapleClientMessageCallback(1, c).dropMessage("You cannot teleport to this map.");
                             c.getSession().write(MaplePacketCreator.enableActions());
                         }
                     } else {
@@ -459,43 +449,13 @@ public class UseCashItemHandler extends AbstractMaplePacketHandler {
                 c.getPlayer().setChalkboard(text);
                 c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.useChalkboard(c.getPlayer(), false));
                 c.getPlayer().getClient().getSession().write(MaplePacketCreator.enableActions());
-  } else if (itemType == 539) {
+            } else if (itemType == 539) {
                 List<String> lines = new LinkedList<String>();
-                    for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 4; i++) {
                     lines.add(slea.readMapleAsciiString());
-                    }
-                    lasttime = nowtime;
-                    nowtime = System.currentTimeMillis();
-                    long gmtime = 1;
-                    if(c.getPlayer().getGMLevel()>2){
-                    gmtime=1;
-                    }else if(c.getPlayer().getVip()>1){
-                    gmtime=1;
-                      }else if(c.getPlayer().getVip()>2){
-                    gmtime=1;
-                      }else if(c.getPlayer().getVip()>3){
-                    gmtime=1;
-                      }else if(c.getPlayer().getVip()>4){
-                    gmtime=1;
-                    }
-                    if (nowtime- lasttime < gmtime){
-                        c.getPlayer().getClient().getSession().write(MaplePacketCreator.serverNotice(1, "为防止恶意刷屏，请稍候再试！"));
-                        MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 0, true, false);
-                    }else{
-                    c.getChannelServer().getWorldInterface().broadcastMessage(null, MaplePacketCreator.getAvatarMega(c.getPlayer(), c.getChannel(), itemId, lines, (slea.readByte() != 0)).getBytes());
-
-/*                    if(c.getPlayer().getVip()>0){
-                    c.getChannelServer().getWorldInterface().broadcastMessage(null, MaplePacketCreator.getAvatarMega(c.getPlayer(), c.getChannel(), itemId, lines, (slea.readByte() != 0)).getBytes());
-
-                    }else{
-                        String  mes="";
-                        for (int i=0;i<lines.size();i++) {
-                             mes += lines.get(i);
-                        }
-                    c.getChannelServer().getWorldInterface().broadcastMessage(null, MaplePacketCreator.serverNotice(3, c.getChannel(), c.getPlayer().getName() + " : " + mes).getBytes());
-                    }*/
-                    MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
-                    }
+                }
+                c.getChannelServer().getWorldInterface().broadcastMessage(null, MaplePacketCreator.getAvatarMega(c.getPlayer(), c.getChannel(), itemId, lines, (slea.readByte() != 0)).getBytes());
+                MapleInventoryManipulator.removeById(c, MapleInventoryType.CASH, itemId, 1, true, false);
             }
         } catch (RemoteException e) {
             c.getChannelServer().reconnectWorld();

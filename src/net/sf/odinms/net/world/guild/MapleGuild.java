@@ -21,7 +21,6 @@ import net.sf.odinms.net.channel.ChannelServer;
 import net.sf.odinms.net.channel.remote.ChannelWorldInterface;
 import net.sf.odinms.net.world.WorldRegistryImpl;
 import net.sf.odinms.tools.MaplePacketCreator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +50,6 @@ public class MapleGuild implements java.io.Serializable {
     private int logoBGColor;
     private String notice;
     private int signature;
-    private int hideout;
     private Map<Integer, List<Integer>> notifications = new LinkedHashMap<Integer, List<Integer>>();
     private boolean bDirty = true;
 
@@ -81,7 +79,6 @@ public class MapleGuild implements java.io.Serializable {
             logoBG = rs.getInt("logoBG");
             logoBGColor = rs.getInt("logoBGColor");
             capacity = rs.getInt("capacity");
-            hideout = rs.getInt("hideout");
             for (int i = 1; i <= 5; i++) {
                 rankTitles[i - 1] = rs.getString("rank" + i + "title");
             }
@@ -198,19 +195,6 @@ public class MapleGuild implements java.io.Serializable {
 
     public int getLeaderId() {
         return leader;
-    }
-
-    public int getHideout() {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT hideout FROM guilds WHERE guildid = ?");
-            ResultSet rs = ps.executeQuery();
-            hideout = rs.getInt("hideout");
-            ps.executeUpdate();
-            ps.close();
-        } catch (SQLException ex) {
-        }
-        return hideout;
     }
 
     public int getGP() {
@@ -390,34 +374,24 @@ public class MapleGuild implements java.io.Serializable {
     }
 
     public int addGuildMember(MapleGuildCharacter mgc) {
-        // first of all, insert it into the members
-        // keeping alphabetical order of lowest ranks ;)
         synchronized (members) {
             if (members.size() >= capacity) {
                 return 0;
             }
-
             for (int i = members.size() - 1; i >= 0; i--) {
-                // we will stop going forward when
-                // 1. we're done with rank 5s, or
-                // 2. the name comes alphabetically before the new member
                 if (members.get(i).getGuildRank() < 5 || members.get(i).getName().compareTo(mgc.getName()) < 0) {
-                    // then we should add it at the i+1 location
                     members.add(i + 1, mgc);
                     bDirty = true;
                     break;
                 }
             }
         }
-
         this.broadcast(MaplePacketCreator.newGuildMember(mgc));
-
         return 1;
     }
 
     public void leaveGuild(MapleGuildCharacter mgc) {
         this.broadcast(MaplePacketCreator.memberLeft(mgc, false));
-
         synchronized (members) {
             members.remove(mgc);
             bDirty = true;
@@ -438,7 +412,6 @@ public class MapleGuild implements java.io.Serializable {
                     // i hate global for not saying who expelled
                     this.broadcast(MaplePacketCreator.serverNotice(5, initiator.getName() + " has expelled " +
                             mgc.getName() + "."));
-
                     try {
                         if (mgc.isOnline()) {
                             WorldRegistryImpl.getInstance().getChannel(mgc.getChannel()).setGuildAndRank(cid, 0, 5);
@@ -446,7 +419,6 @@ public class MapleGuild implements java.io.Serializable {
                             String sendTo = mgc.getName();
                             String sendFrom = initiator.getName();
                             String msg = "You have been expelled from the guild.";
-
                             try {
                                 initiator.getName();
                                 MaplePacketCreator.sendUnkwnNote(sendTo, msg, sendFrom);
@@ -480,7 +452,6 @@ public class MapleGuild implements java.io.Serializable {
                     re.printStackTrace();
                     return;
                 }
-
                 mgc.setGuildRank(newRank);
                 this.broadcast(MaplePacketCreator.changeRank(mgc));
                 return;
@@ -492,7 +463,6 @@ public class MapleGuild implements java.io.Serializable {
     public void setGuildNotice(String notice) {
         this.notice = notice;
         writeToDB();
-
         this.broadcast(MaplePacketCreator.guildNotice(this.id, notice));
     }
 
@@ -511,7 +481,6 @@ public class MapleGuild implements java.io.Serializable {
         for (int i = 0; i < 5; i++) {
             rankTitles[i] = ranks[i];
         }
-
         this.broadcast(MaplePacketCreator.rankTitleChange(this.id, ranks));
         this.writeToDB();
     }
@@ -528,7 +497,6 @@ public class MapleGuild implements java.io.Serializable {
         this.logo = logo;
         this.logoColor = logocolor;
         this.writeToDB();
-
         this.broadcast(null, -1, BCOp.EMBELMCHANGE);
     }
 
@@ -561,120 +529,13 @@ public class MapleGuild implements java.io.Serializable {
         if (mc == null) {
             return MapleGuildResponse.NOT_IN_CHANNEL;
         }
-
         if (mc.getGuildId() > 0) {
             return MapleGuildResponse.ALREADY_IN_GUILD;
         }
-
         mc.getClient().getSession().write(MaplePacketCreator.guildInvite(c.getPlayer().getGuildId(), c.getPlayer().getName()));
-
         return null;
     }
-public static void ZreHylvl(MapleClient c, int npcid) { 
-  try 
-  { 
-   Connection con = DatabaseConnection.getConnection(); 
-   PreparedStatement ps = con.prepareStatement( 
-     "SELECT `name`, `level`, `str`, `dex`, " + 
-     "`int`, `luk` FROM characters ORDER BY `level` DESC LIMIT 100"); 
-    
-   ResultSet rs = ps.executeQuery(); 
-   c.getSession().write(MaplePacketCreator.ZreHylvl(npcid, rs)); 
-    
-   ps.close(); 
-   rs.close(); 
-  } 
-  catch (Exception e) {log.error("failed to display guild ranks.", e);} 
- } 
-    
-    public static void ZreHyfame(MapleClient c, int npcid) 
- { 
-  try 
-  { 
-   Connection con = DatabaseConnection.getConnection(); 
-   PreparedStatement ps = con.prepareStatement( 
-     "SELECT `name`, `fame`, `str`, `dex`, " + 
-     "`int`, `luk` FROM characters ORDER BY `fame` DESC LIMIT 100"); 
-    
-   ResultSet rs = ps.executeQuery(); 
-   c.getSession().write(MaplePacketCreator.ZreHyfame(npcid, rs)); 
-    
-   ps.close(); 
-   rs.close(); 
-  } 
-  catch (Exception e) {log.error("failed to display guild ranks.", e);} 
- } 
-    public static void ZreHymeso(MapleClient c, int npcid) 
- { 
-  try 
-  { 
-   Connection con = DatabaseConnection.getConnection(); 
-   PreparedStatement ps = con.prepareStatement( 
-     "SELECT `name`, `meso`, `str`, `dex`, " + 
-     "`int`, `luk` FROM characters ORDER BY `meso` DESC LIMIT 100"); 
-    
-   ResultSet rs = ps.executeQuery(); 
-   c.getSession().write(MaplePacketCreator.ZreHymeso(npcid, rs)); 
-    
-   ps.close(); 
-   rs.close(); 
-  } 
-  catch (Exception e) {log.error("failed to display guild ranks.", e);} 
- }
-    
-    public static void ZreHyzs(MapleClient c, int npcid) 
- { 
-  try 
-  { 
-   Connection con = DatabaseConnection.getConnection(); 
-   PreparedStatement ps = con.prepareStatement( 
-     "SELECT `name`, `reborns`, `str`, `dex`, " + 
-     "`int`, `luk` FROM characters ORDER BY `reborns` DESC LIMIT 10"); 
-    
-   ResultSet rs = ps.executeQuery(); 
-   c.getSession().write(MaplePacketCreator.ZreHyzs(npcid, rs)); 
-    
-   ps.close(); 
-   rs.close(); 
-  } 
-  catch (Exception e) {log.error("failed to display guild ranks.", e);} 
- } 
-    
-    public static void ZreHypvpkills(MapleClient c, int npcid) 
- { 
-  try 
-  { 
-   Connection con = DatabaseConnection.getConnection(); 
-   PreparedStatement ps = con.prepareStatement( 
-     "SELECT `name`, `pvpkills`, `str`, `dex`, " + 
-     "`int`, `luk` FROM characters ORDER BY `pvpkills` DESC LIMIT 10"); 
-    
-   ResultSet rs = ps.executeQuery(); 
-   c.getSession().write(MaplePacketCreator.ZreHypvpkills(npcid, rs)); 
-    
-   ps.close(); 
-   rs.close(); 
-  } 
-  catch (Exception e) {log.error("failed to display guild ranks.", e);} 
- } 
-    public static void ZreHypvpdeaths(MapleClient c, int npcid) 
- { 
-  try 
-  { 
-   Connection con = DatabaseConnection.getConnection(); 
-   PreparedStatement ps = con.prepareStatement( 
-     "SELECT `name`, `pvpdeaths`, `str`, `dex`, " + 
-     "`int`, `luk` FROM characters ORDER BY `pvpdeaths` DESC LIMIT 20"); 
-    
-   ResultSet rs = ps.executeQuery(); 
-   c.getSession().write(MaplePacketCreator.ZreHypvpdeaths(npcid, rs)); 
-    
-   ps.close(); 
-   rs.close(); 
-  } 
-  catch (Exception e) {log.error("failed to display guild ranks.", e);} 
- }
-    
+
     public static void displayGuildRanks(MapleClient c, int npcid) {
         try {
             Connection con = DatabaseConnection.getConnection();
@@ -688,9 +549,5 @@ public static void ZreHylvl(MapleClient c, int npcid) {
         } catch (Exception e) {
             log.error("failed to display guild ranks.", e);
         }
-    }
-
-    public void setHideout(int a) {
-        this.hideout = a;
     }
 }

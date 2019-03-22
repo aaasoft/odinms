@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
 import net.sf.odinms.provider.MapleDataProviderFactory;
 import net.sf.odinms.tools.data.input.GenericLittleEndianAccessor;
 import net.sf.odinms.tools.data.input.InputStreamByteStream;
@@ -17,10 +16,8 @@ import net.sf.odinms.tools.data.input.LittleEndianAccessor;
 
 public class ListWZFile {
 	private LittleEndianAccessor lea;
-	// will be decorated as Unmodifiable after loading is done
 	private List<String> entries = new ArrayList<String>();
 	private static Collection<String> modernImgs = new HashSet<String>();
-	
 	private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ListWZFile.class);
 
 	public static byte[] xorBytes(byte[] a, byte[] b) {
@@ -33,7 +30,6 @@ public class ListWZFile {
 
 	public ListWZFile(File listwz) throws FileNotFoundException {
 		lea = new GenericLittleEndianAccessor(new InputStreamByteStream(new BufferedInputStream(new FileInputStream(listwz))));
-
 		while (lea.available() > 0) {
 			int l = lea.readInt();
 			char[] chunk = new char[l];

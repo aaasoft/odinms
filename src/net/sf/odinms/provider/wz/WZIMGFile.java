@@ -1,24 +1,3 @@
-/*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
-                       Matthias Butz <matze@odinms.de>
-                       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License version 3
-    as published by the Free Software Foundation. You may not use, modify
-    or distribute this program under any other version of the
-    GNU Affero General Public License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package net.sf.odinms.provider.wz;
 
 import java.awt.Point;
@@ -27,17 +6,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-
 import net.sf.odinms.tools.data.input.GenericSeekableLittleEndianAccessor;
 import net.sf.odinms.tools.data.input.RandomAccessByteStream;
 import net.sf.odinms.tools.data.input.SeekableLittleEndianAccessor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/*
- * Ported Code, see WZFile.java for more info
- */
 public class WZIMGFile {
 	private Logger log = LoggerFactory.getLogger(WZIMGFile.class);
 	private WZFileEntry file;
@@ -55,7 +29,6 @@ public class WZIMGFile {
 		root = new WZIMGEntry(file.getParent());
 		root.setName(file.getName());
 		root.setType(MapleDataType.EXTENDED);
-		// dumpImg(new FileOutputStream(file.getName()), slea);
 		this.modernImg = modernImg;
 		parseExtended(root, slea, 0);
 		root.finish();
@@ -88,7 +61,7 @@ public class WZIMGFile {
 				entry.setName(name);
 				break;
 			} default:
-				log.error("未知: {} 在注销 {}", marker, (slea.getPosition() - file.getOffset()));
+				log.error("Unknown Image identifier: {} at offset {}", marker, (slea.getPosition() - file.getOffset()));
 		}
 
 		marker = slea.readByte();
@@ -118,7 +91,6 @@ public class WZIMGFile {
 				entry.setType(MapleDataType.STRING);
 				byte iMarker = slea.readByte();
 				if (iMarker == 0) {
-					// String pathToData = MapleDataTool.getFullDataPath(entry);
 					entry.setData(WZTool.readDecodedString(slea));
 				} else if (iMarker == 1) {
 					entry.setData(WZTool.readDecodedStringAtOffsetAndReset(slea, slea.readInt() + file.getOffset()));
@@ -133,7 +105,7 @@ public class WZIMGFile {
 				parseExtended(entry, slea, endOfExtendedBlock);
 				break;
 			default:
-				log.error("未知 {}", marker);
+				log.error("Unknown Image type {}", marker);
 		}
 	}
 
@@ -149,18 +121,9 @@ public class WZIMGFile {
 				type = WZTool.readDecodedStringAtOffsetAndReset(slea, file.getOffset() + slea.readInt());
 				break;
 			default:
-				throw new RuntimeException("未知: " + marker + " 在注销 " +
+				throw new RuntimeException("Unknown extended image identifier: " + marker + " at offset " +
 					(slea.getPosition() - file.getOffset()));
 		}
-		
-		/*
-		 * "Shape2D#Vector2D"
-		 * "Shape2D#Convex2D"
-		 * "Property"
-		 * "Sound_DX8"
-		 * "Canvas"
-		 * "UOL"
-		 */
 		if (type.equals("Property")) {
 			entry.setType(MapleDataType.PROPERTY);
 			slea.readByte();
@@ -189,7 +152,7 @@ public class WZIMGFile {
 					entry.addChild(child);
 				}
 			} else {
-				log.warn("标志 != 1 ({})", marker);
+				log.warn("Canvas marker != 1 ({})", marker);
 			}
 			int width = WZTool.readValue(slea);
 			int height = WZTool.readValue(slea);
@@ -198,7 +161,6 @@ public class WZIMGFile {
 			slea.readInt();
 			int dataLength = slea.readInt() - 1;
 			slea.readByte();
-			
 			if (provideImages) {
 				byte[] pngdata = slea.read(dataLength);
 				entry.setData(new PNGMapleCanvas(width, height, dataLength, format + format2, pngdata));
@@ -224,7 +186,6 @@ public class WZIMGFile {
 			slea.readByte();
 			int dataLength = WZTool.readValue(slea);
 			WZTool.readValue(slea); // no clue what this is
-
 			int offset = (int) slea.getPosition();
 			entry.setData(new ImgMapleSound(dataLength, offset - file.getOffset()));
 			slea.seek(endOfExtendedBlock);
@@ -240,10 +201,10 @@ public class WZIMGFile {
 					entry.setData(WZTool.readDecodedStringAtOffsetAndReset(slea, file.getOffset() + slea.readInt()));
 					break;
 				default:
-					log.error("未知: {} {}", uolmarker, entry.getName());
+					log.error("Unknown UOL marker: {} {}", uolmarker, entry.getName());
 			}
 		} else {
-			throw new RuntimeException("未知: " + type);
+			throw new RuntimeException("Unhandeled extended type: " + type);
 		}
 	}
 }

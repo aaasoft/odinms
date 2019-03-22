@@ -22,7 +22,6 @@ public class CheatTracker {
     private long regenHPSince,  regenMPSince,  lastAttackTime,  lastDamage,  takingDamageSince,  lastDamageTakenTime,  summonSummonTime,  attackingSince,  lastSmegaTime;
     private int numSequentialDamage,  numSequentialSummonAttack,  numSameDamage,  sMegaSpamCount,  monsterMoveCount,  attacksWithoutHit,  numHPRegens,  numMPRegens,  numSequentialAttacks;
     private Point lastMonsterMove;
-    private long[] lastTime = new long[6];
     private Boolean pickupComplete = Boolean.TRUE;
     private ScheduledFuture<?> invalidationTask;
 
@@ -31,21 +30,6 @@ public class CheatTracker {
         invalidationTask = TimerManager.getInstance().register(new InvalidationTask(), 60000);
         takingDamageSince = attackingSince = regenMPSince = regenHPSince = System.currentTimeMillis();
     }
-
-  public synchronized boolean Spam(int limit, int type) {
-        if (type < 0 || lastTime.length < type) {
-            type = 1; // default xD
-        }
-        if (!chr.get().isGM()) {
-            if (System.currentTimeMillis() < limit + lastTime[type]) {
-                return true;
-            }
-        }
-        lastTime[type] = System.currentTimeMillis();
-        return false;
-    }
-
-
 
     public synchronized void checkSMega() {
         long oldLastSmegaTime = lastSmegaTime;
@@ -62,7 +46,6 @@ public class CheatTracker {
 
     public boolean checkAttack(int skillId) {
         numSequentialAttacks++;
-
         long oldLastAttackTime = lastAttackTime;
         lastAttackTime = System.currentTimeMillis();
         long attackTime = lastAttackTime - attackingSince;

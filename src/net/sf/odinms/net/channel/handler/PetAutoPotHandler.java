@@ -28,13 +28,12 @@ public class PetAutoPotHandler extends AbstractMaplePacketHandler {
         slea.readByte();
         int itemId = slea.readInt();
         IItem toUse = c.getPlayer().getInventory(MapleInventoryType.USE).getItem(slot);
-        MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
         if (toUse != null && toUse.getQuantity() > 0) {
             if (toUse.getItemId() != itemId) {
                 return;
             }
             MapleInventoryManipulator.removeFromSlot(c, MapleInventoryType.USE, slot, (short) 1, false);
-            ii.getItemEffect(toUse.getItemId()).applyTo(c.getPlayer());
+            MapleItemInformationProvider.getInstance().getItemEffect(toUse.getItemId()).applyTo(c.getPlayer());
         }
     }
 }

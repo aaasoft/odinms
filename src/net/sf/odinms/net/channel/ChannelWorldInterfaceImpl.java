@@ -6,13 +6,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import net.sf.odinms.client.BuddyList;
 import net.sf.odinms.client.BuddylistEntry;
 import net.sf.odinms.client.MapleCharacter;
@@ -179,18 +176,10 @@ public class ChannelWorldInterfaceImpl extends UnicastRemoteObject implements Ch
     public List<CheaterData> getCheaters() throws RemoteException {
         List<CheaterData> cheaters = new ArrayList<CheaterData>();
         List<MapleCharacter> allplayers = new ArrayList<MapleCharacter>(server.getPlayerStorage().getAllCharacters());
-        /*Collections.sort(allplayers, new Comparator<MapleCharacter>() {
-        @Override
-        public int compare(MapleCharacter o1, MapleCharacter o2) {
-        int thisVal = o1.getCheatTracker().getPoints();
-        int anotherVal = o2.getCheatTracker().getPoints();
-        return (thisVal<anotherVal ? 1 : (thisVal==anotherVal ? 0 : -1));
-        }
-        });*/
         for (int x = allplayers.size() - 1; x >= 0; x--) {
             MapleCharacter cheater = allplayers.get(x);
             if (cheater.getCheatTracker().getPoints() > 0) {
-                cheaters.add(new CheaterData(cheater.getCheatTracker().getPoints(),"人物ID: "+cheater.getId()+" 名字: "+MapleCharacterUtil.makeMapleReadable(cheater.getName()) +" 频道: "+cheater.getClient().getChannel()+" (" + cheater.getCheatTracker().getPoints() + ") " + cheater.getCheatTracker().getSummary()));
+                cheaters.add(new CheaterData(cheater.getCheatTracker().getPoints(), MapleCharacterUtil.makeMapleReadable(cheater.getName()) + " (" + cheater.getCheatTracker().getPoints() + ") " + cheater.getCheatTracker().getSummary()));
             }
         }
         Collections.sort(cheaters);
@@ -306,10 +295,8 @@ public class ChannelWorldInterfaceImpl extends UnicastRemoteObject implements Ch
     public void setGuildAndRank(int cid, int guildid, int rank) throws RemoteException {
         MapleCharacter mc = server.getPlayerStorage().getCharacterById(cid);
         if (mc == null) {
-            // System.out.println("ERROR: cannot find player in given channel");
             return;
         }
-
         boolean bDifferentGuild;
         if (guildid == -1 && rank == -1) //just need a respawn
         {
@@ -320,8 +307,6 @@ public class ChannelWorldInterfaceImpl extends UnicastRemoteObject implements Ch
             mc.setGuildRank(rank);
             mc.saveGuildStatus();
         }
-
-
         if (bDifferentGuild) {
             mc.getMap().broadcastMessage(mc,
                     MaplePacketCreator.removePlayerFromMap(cid), false);
@@ -356,27 +341,17 @@ public class ChannelWorldInterfaceImpl extends UnicastRemoteObject implements Ch
     public void reloadGuildCharacters() throws RemoteException {
         for (MapleCharacter mc : server.getPlayerStorage().getAllCharacters()) {
             if (mc.getGuildId() > 0) {
-                //multiple world ops, but this method is ONLY used
-                //in !clearguilds gm command, so it shouldn't be a problem
-                server.getWorldInterface().setGuildMemberOnline(
-                        mc.getMGC(), true, server.getChannel());
+                server.getWorldInterface().setGuildMemberOnline(mc.getMGC(), true, server.getChannel());
                 server.getWorldInterface().memberLevelJobUpdate(mc.getMGC());
             }
         }
-
         ChannelServer.getInstance(this.getChannelId()).reloadGuildSummary();
     }
 
     @Override
-    public void changeEmblem(int gid,
-            List<Integer> affectedPlayers, MapleGuildSummary mgs)
-            throws RemoteException {
+    public void changeEmblem(int gid, List<Integer> affectedPlayers, MapleGuildSummary mgs) throws RemoteException {
         ChannelServer.getInstance(this.getChannelId()).updateGuildSummary(gid, mgs);
-        this.sendPacket(affectedPlayers,
-                MaplePacketCreator.guildEmblemChange(gid,
-                mgs.getLogoBG(), mgs.getLogoBGColor(),
-                mgs.getLogo(), mgs.getLogoColor()),
-                -1);
+        this.sendPacket(affectedPlayers, MaplePacketCreator.guildEmblemChange(gid, mgs.getLogoBG(), mgs.getLogoBGColor(), mgs.getLogo(), mgs.getLogoColor()), -1);
         this.setGuildAndRank(affectedPlayers, -1, -1, -1);	//respawn player
     }
 
@@ -454,10 +429,12 @@ public class ChannelWorldInterfaceImpl extends UnicastRemoteObject implements Ch
                 }
             }
         }
-    }public void sendSpouseChat(String sender, String target, String message) throws RemoteException {
+    }
+
+    public void sendSpouseChat(String sender, String target, String message) throws RemoteException {
         if (isConnected(target)) {
- 		            server.getPlayerStorage().getCharacterByName(target).getClient().getSession().write(
- 	            MaplePacketCreator.sendSpouseChat(server.getPlayerStorage().getCharacterByName(sender), message));
- 		        }
- 	  }
+            server.getPlayerStorage().getCharacterByName(target).getClient().getSession().write(
+                    MaplePacketCreator.sendSpouseChat(server.getPlayerStorage().getCharacterByName(sender), message));
+        }
+    }
 }

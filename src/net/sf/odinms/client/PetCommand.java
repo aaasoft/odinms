@@ -1,15 +1,11 @@
 package net.sf.odinms.client;
 
-/**
- *
+/*
  * @author Danny (Leifde)
  */
 public class PetCommand {
 
-    private int petId;
-    private int skillId;
-    private int prob;
-    private int inc;
+    private int petId ,skillId, prob, inc;
 
     public PetCommand(int petId, int skillId, int prob, int inc) {
         this.petId = petId;

@@ -10,20 +10,19 @@ import net.sf.odinms.tools.MaplePacketCreator;
 import net.sf.odinms.tools.data.input.SeekableLittleEndianAccessor;
 
 /**
- *
  * @author PurpleMadness
  */
 public class UseMountFoodHandler extends AbstractMaplePacketHandler {
 
     private int expRandom(int mountlevel) { //Shortened by Moogra
         int exp = 0;
-        if (mountlevel > 0 && mountlevel < 8) {
+        if (mountlevel < 8) {
             exp = rand(15, 26);
         } else if (mountlevel > 9 && mountlevel < 16) {
             exp = rand(7, 20);
         } else if (mountlevel > 15 && mountlevel < 25) {
             exp = rand(9, 29);
-        } else if (mountlevel > 24 && mountlevel < 31) {
+        } else if (mountlevel > 24) {
             exp = rand(12, 37);
         }
         return exp;
@@ -38,15 +37,12 @@ public class UseMountFoodHandler extends AbstractMaplePacketHandler {
         slea.readInt();
         slea.readShort();
         int itemid = slea.readInt();
-        int newexp = expRandom(c.getPlayer().getMount().getLevel()) * ChannelServer.getInstance(c.getChannel()).getMountRate();
-        int oldexp = c.getPlayer().getMount().getExp();
         if (c.getPlayer().getInventory(MapleInventoryType.USE).findById(itemid) != null) {
             if (c.getPlayer().getMount() != null) {
-                int oldtiredness = c.getPlayer().getMount().getTiredness();
                 c.getPlayer().getMount().setTiredness(c.getPlayer().getMount().getTiredness() - 30);
-                c.getPlayer().getMount().setExp(newexp + oldexp);
+                c.getPlayer().getMount().setExp(expRandom(c.getPlayer().getMount().getLevel()) * ChannelServer.getInstance(c.getChannel()).getMountRate() + c.getPlayer().getMount().getExp());
                 int level = c.getPlayer().getMount().getLevel();
-                if (c.getPlayer().getMount().getExp() >= ExpTable.getMountExpNeededForLevel(level) && level < 31 && oldtiredness != 0) {
+                if (c.getPlayer().getMount().getExp() >= ExpTable.getMountExpNeededForLevel(level) && level < 31 && c.getPlayer().getMount().getTiredness() != 0) {
                     c.getPlayer().getMount().setLevel(level + 1);
                     c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.updateMount(c.getPlayer().getId(), c.getPlayer().getMount(), true));
                 } else {
@@ -56,7 +52,6 @@ public class UseMountFoodHandler extends AbstractMaplePacketHandler {
             } else {
                 c.getPlayer().dropMessage("Please get on your mount first before using the mount food.");
             }
-        } else {
         }
     }
 }

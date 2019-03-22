@@ -44,7 +44,7 @@ public class GuildOperationHandler extends AbstractMaplePacketHandler {
         public Invited(String n, int id) {
             name = n.toLowerCase();
             gid = id;
-            expiration = System.currentTimeMillis() + 60 * 60 * 1000; // 1 hr expiration
+            expiration = System.currentTimeMillis() + 60 * 60 * 1000;
         }
 
         @Override
@@ -130,20 +130,16 @@ public class GuildOperationHandler extends AbstractMaplePacketHandler {
                 }
                 break;
             case 0x06:
-                // accepted guild invitation
-                log.info(slea.toString());
                 if (mc.getGuildId() > 0) {
                     log.info("[hax] " + mc.getName() + " attempted to join a guild when s/he is already in one.");
                     return;
                 }
-                // read data
                 gid = slea.readInt();
                 int cid = slea.readInt();
                 if (cid != mc.getId()) {
                     log.info("[hax] " + mc.getName() + " attempted to join a guild with a different character id.");
                     return;
                 }
-                // make sure the person is actually on the invited list
                 name = mc.getName().toLowerCase();
                 Iterator<Invited> itr = invited.iterator();
                 boolean bOnList = false;
@@ -155,23 +151,19 @@ public class GuildOperationHandler extends AbstractMaplePacketHandler {
                         break;
                     }
                 }
-
                 if (!bOnList) {
                     log.info("[hax] " + mc.getName() +
                             " is trying to join a guild that never invited him/her (or that the invitation has expired)");
                     return;
                 }
-                // so we're on the list, and everything checks out, proceed to add
                 mc.setGuildId(gid); // joins the guild
                 mc.setGuildRank(5); // start at lowest rank
                 int s;
                 try {
-                    // log.info("Attempting to add to guild.");
                     s = c.getChannelServer().getWorldInterface().addGuildMember(mc.getMGC());
                 } catch (java.rmi.RemoteException e) {
                     log.error("RemoteException occurred while attempting to add character to guild", e);
                     c.getSession().write(MaplePacketCreator.serverNotice(5, "Unable to connect to the World Server. Please try again later."));
-                    // revert the guild changes
                     mc.setGuildId(0);
                     return;
                 }
@@ -180,21 +172,15 @@ public class GuildOperationHandler extends AbstractMaplePacketHandler {
                     mc.setGuildId(0);
                     return;
                 }
-                // send her the guild info
                 c.getSession().write(MaplePacketCreator.showGuildInfo(mc));
                 mc.saveGuildStatus(); // update database
                 respawnPlayer(mc);
                 break;
             case 0x07:
-                // leaving
-                // 3C 00 07 37 75 00 00 04 00 4A 61 6E 65
                 cid = slea.readInt();
                 name = slea.readMapleAsciiString();
-                // make sure the info is correct to prevent guild hack
-                // lol this is probably where nexon messed up during guild hack
                 if (cid != mc.getId() || !name.equals(mc.getName()) || mc.getGuildId() <= 0) {
-                    log.info("[hax] " + mc.getName() + " tried to quit guild under the name \"" + name +
-                            "\" and current guild id of " + mc.getGuildId() + ".");
+                    log.info("[hax] " + mc.getName() + " tried to quit guild under the name \"" + name + "\" and current guild id of " + mc.getGuildId() + ".");
                     return;
                 }
                 try {
@@ -204,14 +190,12 @@ public class GuildOperationHandler extends AbstractMaplePacketHandler {
                     c.getSession().write(MaplePacketCreator.serverNotice(5, "Unable to connect to the World Server. Please try again later."));
                     return;
                 }
-                // show that the player now has empty guild
                 c.getSession().write(MaplePacketCreator.showGuildInfo(null));
                 mc.setGuildId(0);
                 mc.saveGuildStatus();
                 respawnPlayer(mc);
                 break;
             case 0x08:
-                // expel 3C 00 08 37 75 00 00 04 00 4A 61 6E 65
                 cid = slea.readInt();
                 name = slea.readMapleAsciiString();
                 if (mc.getGuildRank() > 2 || mc.getGuildId() <= 0) {
@@ -245,11 +229,8 @@ public class GuildOperationHandler extends AbstractMaplePacketHandler {
                 }
                 break;
             case 0x0e:
-                // log.info(slea.toString());
-                // rank change
                 cid = slea.readInt();
                 byte newRank = slea.readByte();
-                // as usual, first check permissions
                 if (mc.getGuildRank() > 2 || (newRank <= 2 && mc.getGuildRank() != 1) || mc.getGuildId() <= 0) {
                     log.info("[hax] " + mc.getName() + " is trying to change rank outside of his/her permissions.");
                     return;
@@ -266,7 +247,6 @@ public class GuildOperationHandler extends AbstractMaplePacketHandler {
                 }
                 break;
             case 0x0f:
-                // guild emblem change 3C 00 0F E8 03 07 D0 07 02
                 if (mc.getGuildId() <= 0 || mc.getGuildRank() != 1 || mc.getMapId() != 200000301) {
                     log.info("[hax] " + mc.getName() + " tried to change guild emblem without being the guild leader.");
                     return;
@@ -288,10 +268,8 @@ public class GuildOperationHandler extends AbstractMaplePacketHandler {
                 }
                 mc.gainMeso(-MapleGuild.CHANGE_EMBLEM_COST, true, false, true);
                 respawnPlayer(mc);
-                // c.getSession().write(MaplePacketCreator.serverNotice(1, "Your Guild's emblem has been changed."));
                 break;
             case 0x10:
-                // guild notice change 3C 00 10 0B 00 74 65 73 74 20 6E 6F 74 69 63 65
                 if (mc.getGuildId() <= 0 || mc.getGuildRank() > 2) {
                     log.info("[hax] " + mc.getName() + " tried to change guild notice while not in a guild.");
                     return;

@@ -1,24 +1,3 @@
-/*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
-                       Matthias Butz <matze@odinms.de>
-                       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License version 3
-    as published by the Free Software Foundation. You may not use, modify
-    or distribute this program under any other version of the
-    GNU Affero General Public License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package net.sf.odinms.provider.wz;
 
 import java.awt.Point;
@@ -31,7 +10,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
-
 import net.sf.odinms.provider.MapleCanvas;
 
 public class PNGMapleCanvas implements MapleCanvas {
@@ -74,7 +52,6 @@ public class PNGMapleCanvas implements MapleCanvas {
 		int size8888 = 0;
 		int maxWriteBuf = 2;
 		int maxHeight = 3;
-
 		byte[] writeBuf = new byte[maxWriteBuf];
 		@SuppressWarnings(value = "unused")
 		byte[] rowPointers = new byte[maxHeight];
@@ -91,33 +68,25 @@ public class PNGMapleCanvas implements MapleCanvas {
 				sizeUncompressed = getHeight() * getWidth() / 128;
 				break;
 		}
-
 		size8888 = getHeight() * getWidth() * 8;
-
 		if (size8888 > maxWriteBuf) {
 			maxWriteBuf = size8888;
 			writeBuf = new byte[maxWriteBuf];
 		}
-
 		if (getHeight() > maxHeight) {
 			maxHeight = getHeight();
 			rowPointers = new byte[maxHeight];
 		}
-
 		Inflater dec = new Inflater();
 		dec.setInput(getData(), 0, dataLength);
-
 		int declen = 0;
 		byte[] uc = new byte[sizeUncompressed];
-
 		try {
 			declen = dec.inflate(uc);
 		} catch ( DataFormatException ex) {
 			throw new RuntimeException("zlib fucks", ex);
 		}
-
 		dec.end();
-		// fuck the format
 		if (getFormat() == 1) {
 			for ( int i = 0; i < sizeUncompressed; i++) {
 				byte low = (byte) (uc[i] & 0x0F);
@@ -142,7 +111,6 @@ public class PNGMapleCanvas implements MapleCanvas {
 		} else if (getFormat() == 517) {
 			byte b = 0x00;
 			int pixelIndex = 0;
-
 			for (int i = 0; i < declen; i++) {
 				for (int j = 0; j < 8; j++) {
 					b = (byte) (((uc[i] & (0x01 << (7 - j))) >> (7 - j)) * 255);
@@ -156,16 +124,11 @@ public class PNGMapleCanvas implements MapleCanvas {
 				}
 			}
 		}
-
 		DataBufferByte imgData = new DataBufferByte(writeBuf, sizeUncompressed);
-
-		//SampleModel sm = new PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, c.getWidth(), c.getHeight(), 4, c.getWidth() * 4, new int[] {2, 1, 0, 3});
 		SampleModel sm = new PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, getWidth(), getHeight(), 4, getWidth() * 4, ZAHLEN);
 		WritableRaster imgRaster = Raster.createWritableRaster(sm, imgData, new Point(0, 0));
-
 		BufferedImage aa = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 		aa.setData(imgRaster);
-
 		return aa;
 	}
 }

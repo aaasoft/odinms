@@ -21,10 +21,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
-
 import net.sf.odinms.database.DatabaseConnection;
 import net.sf.odinms.net.channel.remote.ChannelWorldInterface;
 import net.sf.odinms.net.login.remote.LoginWorldInterface;
@@ -33,7 +31,6 @@ import net.sf.odinms.net.world.guild.MapleGuildCharacter;
 import net.sf.odinms.net.world.remote.WorldChannelInterface;
 import net.sf.odinms.net.world.remote.WorldLoginInterface;
 import net.sf.odinms.net.world.remote.WorldRegistry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +66,6 @@ public class WorldRegistryImpl extends UnicastRemoteObject implements WorldRegis
             rs.close();
             ps.close();
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         runningMessengerId.set(1);
@@ -80,7 +76,6 @@ public class WorldRegistryImpl extends UnicastRemoteObject implements WorldRegis
             try {
                 instance = new WorldRegistryImpl();
             } catch (RemoteException e) {
-                // can't do much anyway we are fucked ^^
                 throw new RuntimeException(e);
             }
         }
@@ -108,7 +103,7 @@ public class WorldRegistryImpl extends UnicastRemoteObject implements WorldRegis
                 if (channelId < 1) {
                     channelId = getFreeChannelId();
                     if (channelId == -1) {
-                        throw new RuntimeException("最大连接已经构成");
+                        throw new RuntimeException("Maximum channels reached");
                     }
                 } else {
                     if (channelServer.containsKey(channelId)) {
@@ -129,9 +124,9 @@ public class WorldRegistryImpl extends UnicastRemoteObject implements WorldRegis
             rs.close();
             ps.close();
         } catch (SQLException ex) {
-            log.error("遇到数据库错误而验证channelserver", ex);
+            log.error("Encountered database error while authenticating channelserver", ex);
         }
-        throw new RuntimeException("找不到指定的 (" + authKey + ")");
+        throw new RuntimeException("Couldn't find a channel with the given key (" + authKey + ")");
     }
 
     public void deregisterChannelServer(int channel) throws RemoteException {
@@ -139,7 +134,7 @@ public class WorldRegistryImpl extends UnicastRemoteObject implements WorldRegis
         for (LoginWorldInterface wli : loginServer) {
             wli.channelOffline(channel);
         }
-        log.info("频道 {} 离线人数.", channel);
+        log.info("Channel {} is offline.", channel);
     }
 
     public WorldLoginInterface registerLoginServer(String authKey, LoginWorldInterface cb) throws RemoteException {
@@ -160,7 +155,7 @@ public class WorldRegistryImpl extends UnicastRemoteObject implements WorldRegis
             ps.close();
             ret = new WorldLoginInterfaceImpl();
         } catch (Exception e) {
-            log.error("遇到数据库错误而验证loginserver", e);
+            log.error("Encountered database error while authenticating loginserver", e);
         }
         return ret;
     }
@@ -222,38 +217,30 @@ public class WorldRegistryImpl extends UnicastRemoteObject implements WorldRegis
         });
         int totalUsers = 0;
         for (Entry<Integer, ChannelWorldInterface> cs : channelServers) {
-            ret.append("频道 ");
+            ret.append("Channel ");
             ret.append(cs.getKey());
             try {
                 cs.getValue().isAvailable();
-                ret.append(": 在线人数, ");
+                ret.append(": online, ");
                 int channelUsers = cs.getValue().getConnected();
                 totalUsers += channelUsers;
-                ret.append(channelUsers);
-                ret.append(" 用户\n");
+                ret.append(channelUsers + " users\n");
             } catch (RemoteException e) {
-                ret.append(": 离线\n");
+                ret.append(": offline\n");
             }
         }
-        ret.append("当前在线的人数为: ");
+        ret.append("Total users online: ");
         ret.append(totalUsers);
         ret.append("\n");
         Properties props = new Properties(WorldServer.getInstance().getWorldProp());
         int loginInterval = Integer.parseInt(props.getProperty("net.sf.odinms.login.interval"));
         for (LoginWorldInterface lwi : loginServer) {
-            ret.append("注册: ");
+            ret.append("Login: ");
             try {
                 lwi.isAvailable();
-                ret.append("在线人数\n");
-                ret.append("用户在登录等待队列: ");
-                ret.append(lwi.getWaitingUsers());
-                ret.append(" 用户\n");
-                int loginMinutes = (int) Math.ceil((double) loginInterval * ((double) lwi.getWaitingUsers() / lwi.getPossibleLoginAverage())) / 60000;
-                ret.append("请静心等待: ");
-                ret.append(loginMinutes);
-                ret.append(" 分钟\n");
+                ret.append("online\n" + "Users waiting in login queue: " + lwi.getWaitingUsers() + " users\n" + "Current average login waiting time: " + (int) Math.ceil((double) loginInterval * ((double) lwi.getWaitingUsers() / lwi.getPossibleLoginAverage())) / 60000 + " minutes\n");
             } catch (RemoteException e) {
-                ret.append("离线\n");
+                ret.append("offline\n");
             }
         }
         return ret.toString();
@@ -289,7 +276,7 @@ public class WorldRegistryImpl extends UnicastRemoteObject implements WorldRegis
                 cwi.reloadGuildCharacters();
             }
         } catch (RemoteException re) {
-            log.error("正在重新加载中....", re);
+            log.error("RemoteException occurred while attempting to reload guilds.", re);
         }
     }
 

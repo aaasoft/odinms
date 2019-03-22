@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
 import net.sf.odinms.client.MapleCharacter;
 import net.sf.odinms.client.MapleClient;
 import net.sf.odinms.database.DatabaseConnection;
@@ -35,11 +34,9 @@ public class ViewCharHandler extends AbstractMaplePacketHandler {
                         inside = true;
                     }
                 }
-
                 if (!inside) {
                     worlds.add(cworld);
                 }
-
                 MapleCharacter chr = MapleCharacter.loadCharFromDB(rs.getInt("id"), c, false);
                 chars.add(chr);
                 charsNum++;
@@ -58,7 +55,7 @@ public class ViewCharHandler extends AbstractMaplePacketHandler {
                 c.getSession().write(MaplePacketCreator.showAllCharacterInfo(w, chrsinworld));
             }
         } catch (Exception e) {
-            log.error("查看所有字符失败", e);
+            log.error("Viewing all chars failed", e);
         }
     }
 }

@@ -4,15 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import net.sf.odinms.client.MapleJob;
 import net.sf.odinms.database.DatabaseConnection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author Matze
  * @author Quit
  */
@@ -33,6 +30,7 @@ public class RankingWorker implements Runnable {
 			updateRanking(MapleJob.MAGICIAN);
 			updateRanking(MapleJob.BOWMAN);
 			updateRanking(MapleJob.THIEF);
+            updateRanking(MapleJob.PIRATE);
 			con.commit();
 			con.setAutoCommit(true);
 			lastUpdate = System.currentTimeMillis();

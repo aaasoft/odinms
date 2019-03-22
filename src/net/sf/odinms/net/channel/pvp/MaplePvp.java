@@ -13,12 +13,9 @@ import net.sf.odinms.tools.MaplePacketCreator;
 
 public class MaplePvp {
 
-    private static int pvpDamage;
-    private static int maxDis;
-    private static int maxHeight;
+    private static int pvpDamage, maxDis, maxHeight;
     private static boolean isAoe = false;
-    public static boolean isLeft = false;
-    public static boolean isRight = false;
+    public static boolean isLeft = false, isRight = false;
 
     private static boolean isMeleeAttack(AbstractDealDamageHandler.AttackInfo attack) {
         switch (attack.skill) {
@@ -212,7 +209,6 @@ public class MaplePvp {
         if (player.getJob().equals(MapleJob.MAGICIAN)) {
             pvpDamage *= 1.20;
         }
-
         //buff modifiers
         Integer mguard = attackedPlayers.getBuffedValue(MapleBuffStat.MAGIC_GUARD);
         Integer mesoguard = attackedPlayers.getBuffedValue(MapleBuffStat.MESOGUARD);
@@ -236,7 +232,6 @@ public class MaplePvp {
                 attackedPlayers.gainMeso(-mesoloss, false);
             }
         }
-
         MapleMonster pvpMob = MapleLifeFactory.getMonster(9400711);
         map.spawnMonsterOnGroundBelow(pvpMob, attackedPlayers.getPosition());
         for (int attacks = 0; attacks < attack.numDamage; attacks++) {
@@ -244,9 +239,8 @@ public class MaplePvp {
             attackedPlayers.addHP(-pvpDamage);
         }
         int attackedDamage = pvpDamage * attack.numDamage;
-        attackedPlayers.getClient().getSession().write(MaplePacketCreator.serverNotice(5, player.getName() + " 给你了 " + attackedDamage + " 伤害!"));
+        attackedPlayers.getClient().getSession().write(MaplePacketCreator.serverNotice(5, player.getName() + " has hit you for " + attackedDamage + " damage!"));
         map.killMonster(pvpMob, player, false);
-
         //rewards
         if (attackedPlayers.getHp() <= 0 && !attackedPlayers.isAlive()) {
             int expReward = attackedPlayers.getLevel() * 100;
@@ -263,9 +257,9 @@ public class MaplePvp {
                 }
             }
             player.gainPvpKill();
-            player.getClient().getSession().write(MaplePacketCreator.serverNotice(6, "已经死亡了 " + attackedPlayers.getName() + "被杀死,获得经验奖励!"));
+            player.getClient().getSession().write(MaplePacketCreator.serverNotice(6, "You've killed " + attackedPlayers.getName() + "!! You've gained a pvp kill!"));
             attackedPlayers.gainPvpDeath();
-            attackedPlayers.getClient().getSession().write(MaplePacketCreator.serverNotice(6, player.getName() + " 已经造成你!"));
+            attackedPlayers.getClient().getSession().write(MaplePacketCreator.serverNotice(6, player.getName() + " has killed you!"));
         }
     }
 

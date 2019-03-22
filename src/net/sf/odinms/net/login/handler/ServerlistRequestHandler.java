@@ -11,9 +11,7 @@ public class ServerlistRequestHandler extends AbstractMaplePacketHandler {
     @Override
     public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         for (int i = 0; i < LoginServer.getInstance().numberOfWorlds(); i++) {
-            //c.getSession().write(MaplePacketCreator.getServerList(i, LoginServer.getInstance().getServerName() + " World " + i, LoginServer.getInstance().getLoad()));
-
-c.getSession().write(MaplePacketCreator.getServerList(0, "欢迎来到梦の岛", LoginServer.getInstance().getLoad()));
+            c.getSession().write(MaplePacketCreator.getServerList(i, LoginServer.getInstance().getServerName() + " World " + i, LoginServer.getInstance().getLoad()));
             c.getSession().write(MaplePacketCreator.getEndOfServerList());
         }
     }

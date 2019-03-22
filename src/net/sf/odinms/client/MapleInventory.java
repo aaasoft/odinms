@@ -20,14 +20,12 @@ public class MapleInventory implements Iterable<IItem>, InventoryContainer {
 	private byte slotLimit;
 	private MapleInventoryType type;
 
-	/** Creates a new instance of MapleInventory */
 	public MapleInventory(MapleInventoryType type, byte slotLimit) {
 		this.inventory = new LinkedHashMap<Byte, IItem>();
 		this.slotLimit = slotLimit;
 		this.type = type;
 	}
 
-	/** Returns the item with its slot id if it exists within the inventory, otherwise null is returned */
 	public IItem findById(int itemId) {
 		for (IItem item : inventory.values()) {
 			if (item.getItemId() == itemId)
@@ -52,9 +50,6 @@ public class MapleInventory implements Iterable<IItem>, InventoryContainer {
 				ret.add(item);
 			}
 		}
-		// the linkedhashmap does impose insert order as returned order but we can not guarantee that this is still the
-		// correct order - blargh, we could empty the map and reinsert in the correct order after each inventory
-		// addition, or we could use an array/list, it's only 255 entries anyway...
 		if (ret.size() > 1) {
 			Collections.sort(ret);
 		}
@@ -65,7 +60,6 @@ public class MapleInventory implements Iterable<IItem>, InventoryContainer {
 		return inventory.values();
 	}
 
-	/** Adds the item to the inventory and returns the assigned slot id */
 	public byte addItem(IItem item) {
 		byte slotId = getNextFreeSlot();
 		if (slotId < 0) {
@@ -149,7 +143,6 @@ public class MapleInventory implements Iterable<IItem>, InventoryContainer {
 		return inventory.size() + margin >= slotLimit;
 	}
 
-	/** Returns the next empty slot id, -1 if the inventory is full */
 	public byte getNextFreeSlot() {
 		if (isFull())
 			return -1;

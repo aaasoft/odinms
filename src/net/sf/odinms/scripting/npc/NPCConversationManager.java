@@ -1,11 +1,8 @@
 package net.sf.odinms.scripting.npc;
-import java.sql.*;
-import net.sf.odinms.database.*;
-import net.sf.odinms.database.DatabaseConnection;
+
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
-import net.sf.odinms.net.channel.ChannelServer;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,8 +36,6 @@ import net.sf.odinms.client.MaplePet;
 import net.sf.odinms.net.channel.ChannelServer;
 import net.sf.odinms.net.world.MapleParty;
 import net.sf.odinms.net.world.MaplePartyCharacter;
-import net.sf.odinms.server.MaplePortal;
-import net.sf.odinms.server.MapleStatEffect;
 import net.sf.odinms.server.life.MapleLifeFactory;
 import net.sf.odinms.server.life.MapleMonster;
 import net.sf.odinms.server.life.MapleMonsterStats;
@@ -49,9 +44,6 @@ import net.sf.odinms.server.maps.MapleMapFactory;
 import net.sf.odinms.server.maps.MapleMapObject;
 import net.sf.odinms.server.maps.MapleMapObjectType;
 import net.sf.odinms.tools.Pair;
-import java.util.Arrays; 
-import net.sf.odinms.server.maps.MapleMapObject; 
-import net.sf.odinms.server.maps.MapleMapObjectType;
 
 /**
  *
@@ -64,59 +56,12 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
     private String getText;
     private ChannelServer cserv;
     private MapleCharacter chr;
-   public boolean createMarriage(String partner_) {      //声明变量
-        MapleCharacter partner = getCharByName(partner_);  //名字
-        if (partner == null) {
-            return false;
-        }
-        partner.setMarried(true);
-        getPlayer().setMarried(true);
-        partner.setPartnerId(getPlayer().getId());
-        getPlayer().setPartnerId(partner.getId());
-        if (partner.getGender() > 0) {
-            Marriage.createMarriage(getPlayer(), partner);
-        } else {
-            Marriage.createMarriage(partner, getPlayer());
-        }
-        return true;
-    }
 
-    public boolean createEngagement(String partner_) {
-        MapleCharacter partner = getCharByName(partner_);
-        if (partner == null) {
-            return false;
-        }
-        if (partner.getGender() > 0) {
-            Marriage.createEngagement(getPlayer(), partner);
-        } else {
-            Marriage.createEngagement(partner, getPlayer());
-        }
-        return true;
-    }
-
-    public void divorceMarriage() {
-        getPlayer().setPartnerId(0);
-        getPlayer().setMarried(false);
-        Marriage.divorceMarriage(getPlayer());
-    }
     public NPCConversationManager(MapleClient c, int npc) {
         super(c);
         this.c = c;
         this.npc = npc;
     }
- public void callGM(String Text) {
-                        for (ChannelServer cservs : ChannelServer.getAllInstances()) {
-                            for (MapleCharacter players : cservs.getPlayerStorage().getAllCharacters()) {
-                                if (players.isGM()) {
-                                    players.getClient().getSession().write(MaplePacketCreator.serverNotice(6, c.getPlayer().getName() + " sent you a message : " + Text));
-                                }
-                            }
-                        }
-                }
-
-public void openDuey() {
-c.getSession().write(MaplePacketCreator.sendDueyAction((byte) 8));
-}
 
     public NPCConversationManager(MapleClient c, int npc, MapleCharacter chr) {
         super(c);
@@ -136,12 +81,6 @@ c.getSession().write(MaplePacketCreator.sendDueyAction((byte) 8));
     public void sendPrev(String text) {
         getClient().getSession().write(MaplePacketCreator.getNPCTalk(npc, (byte) 0, text, "01 00"));
     }
-    public int getCharQuantity(int ismap) { 
-MapleMap map = c.getChannelServer().getMapFactory().getMap(ismap) ; 
-double range = Double.POSITIVE_INFINITY; 
-List<MapleMapObject> players = map.getMapObjectsInRange(c.getPlayer().getPosition (), range, Arrays.asList(MapleMapObjectType.PLAYER)); 
-return players.size(); 
-} 
 
     public void sendNextPrev(String text) {
         getClient().getSession().write(MaplePacketCreator.getNPCTalk(npc, (byte) 0, text, "01 01"));
@@ -227,11 +166,7 @@ return players.size();
                 myparty += 1;
             }
         }
-        if (num == myparty) {
-            return true;
-        } else {
-            return false;
-        }
+        return num == myparty;
     }
 
     public void changeJob(MapleJob job) {
@@ -274,10 +209,7 @@ return players.size();
     public int getNpc() {
         return npc;
     }
-    @Deprecated
-public MapleCharacter getVip() {
-return getPlayer();
-}
+
     /**
      * use getPlayer().getLevel() instead
      * @return
@@ -356,12 +288,7 @@ return getPlayer();
     public int getBuddyCapacity() {
         return getPlayer().getBuddyCapacity();
     }
-    public void serverNotice(String Text) {
-        //c.getChannelServer().broadcastPacket(MaplePacketCreator.serverNotice(6, Text));
-                //这句是错的，因为我前面以经有定义过C。你们没有，所以你们要用下面这句
 
-        c.getChannelServer().broadcastPacket(MaplePacketCreator.serverNotice(6, Text));
-        }
     public void setHair(int hair) {
         getPlayer().setHair(hair);
         getPlayer().updateSingleStat(MapleStat.HAIR, hair);
@@ -374,7 +301,6 @@ return getPlayer();
         getPlayer().equipChanged();
     }
 
-    @SuppressWarnings("static-access")
     public void setSkin(int color) {
         getPlayer().setSkinColor(c.getPlayer().getSkinColor().getById(color));
         getPlayer().updateSingleStat(MapleStat.SKIN, color);
@@ -392,14 +318,7 @@ return getPlayer();
     }
 
     public void warpPartyWithExp(int mapId, int exp) {
-        MapleMap target = getMap(mapId);
-        for (MaplePartyCharacter chr : getPlayer().getParty().getMembers()) {
-            MapleCharacter curChar = c.getChannelServer().getPlayerStorage().getCharacterByName(chr.getName());
-            if ((curChar.getEventInstance() == null && c.getPlayer().getEventInstance() == null) || curChar.getEventInstance() == getPlayer().getEventInstance()) {
-                curChar.changeMap(target, target.getPortal(0));
-                curChar.gainExp(exp, true, false, true);
-            }
-        }
+        warpPartyWithExpMeso(mapId, exp, 0);
     }
 
     public void warpPartyWithExpMeso(int mapId, int exp, int meso) {
@@ -409,7 +328,7 @@ return getPlayer();
             if ((curChar.getEventInstance() == null && c.getPlayer().getEventInstance() == null) || curChar.getEventInstance() == getPlayer().getEventInstance()) {
                 curChar.changeMap(target, target.getPortal(0));
                 curChar.gainExp(exp, true, false, true);
-                curChar.gainMeso(meso, true);
+                curChar.gainMeso(meso, false); //which pq has mesos?
             }
         }
     }
@@ -417,15 +336,11 @@ return getPlayer();
     public void warpRandom(int mapid) {
         MapleMap target = c.getChannelServer().getMapFactory().getMap(mapid);
         Random rand = new Random();
-        MaplePortal portal = target.getPortal(rand.nextInt(target.getPortals().size())); //generate random portal
-        getPlayer().changeMap(target, portal);
+        getPlayer().changeMap(target, target.getPortal(rand.nextInt(target.getPortals().size())));
     }
 
     public int itemQuantity(int itemid) {
-        MapleInventoryType type = MapleItemInformationProvider.getInstance().getInventoryType(itemid);
-        MapleInventory iv = getPlayer().getInventory(type);
-        int possesed = iv.countById(itemid);
-        return possesed;
+        return getPlayer().getInventory(MapleItemInformationProvider.getInstance().getInventoryType(itemid)).countById(itemid);
     }
 
     public MapleSquad createMapleSquad(MapleSquadType type) {
@@ -448,16 +363,8 @@ return getPlayer();
     }
 
     public void giveWonkyBuff(MapleCharacter chr) {
-        long what = Math.round(Math.random() * 4);
-        int what1 = (int) what;
         int Buffs[] = {2022090, 2022091, 2022092, 2022093};
-        int buffToGive = Buffs[what1];
-        MapleItemInformationProvider mii = MapleItemInformationProvider.getInstance();
-        MapleStatEffect statEffect = mii.getItemEffect(buffToGive);
-        //for (MapleMapObject mmo =  this.getParty()) {
-        MapleCharacter character = (MapleCharacter) chr;
-        statEffect.applyTo(character);
-    //}
+        MapleItemInformationProvider.getInstance().getItemEffect(Buffs[(int) Math.round(Math.random() * 4)]).applyTo((MapleCharacter) chr);
     }
 
     public int getSquadState(MapleSquadType type) {
@@ -479,11 +386,7 @@ return getPlayer();
     public boolean checkSquadLeader(MapleSquadType type) {
         MapleSquad squad = c.getChannelServer().getMapleSquad(type);
         if (squad != null) {
-            if (squad.getLeader().getId() == getPlayer().getId()) {
-                return true;
-            } else {
-                return false;
-            }
+            return squad.getLeader().getId() == getPlayer().getId();
         } else {
             return false;
         }
@@ -542,11 +445,7 @@ return getPlayer();
     public boolean canAddSquadMember(MapleSquadType type) {
         MapleSquad squad = c.getChannelServer().getMapleSquad(type);
         if (squad != null) {
-            if (squad.isBanned(getPlayer())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !squad.isBanned(getPlayer());
         }
         return false;
     }
@@ -566,47 +465,31 @@ return getPlayer();
     public static boolean makeRing(MapleClient mc, String partner, int ringId) {
         int partnerId = MapleCharacter.getIdByName(partner, 0);
         int[] ret = net.sf.odinms.client.MapleRing.createRing(mc, ringId, mc.getPlayer().getId(), mc.getPlayer().getName(), partnerId, partner);
-        if (ret[0] == -1 || ret[1] == -1) {
-            return false;
-        } else {
-            return true;
-        }
+        return !(ret[0] == -1 || ret[1] == -1);
     }
 
     public void WarpTo(String player) {
         MapleCharacter victim = c.getChannelServer().getPlayerStorage().getCharacterByName(player);
-        MapleMap target = victim.getMap();
-        c.getPlayer().changeMap(target, target.findClosestSpawnpoint(victim.getPosition()));
+        c.getPlayer().changeMap(victim.getMap(), victim.getMap().findClosestSpawnpoint(victim.getPosition()));
     }
 
-//    public void resetReactors() {
-//        getPlayer().getMap().resetReactors();
-//    }
-    public void ZreHylvl() {
-        MapleGuild.ZreHylvl(getClient(), npc);
-    }
-
-    public void ZreHyfame() {
-        MapleGuild.ZreHyfame(getClient(), npc);
-
-    } public void ZreHymeso() {
-        MapleGuild.ZreHymeso(getClient(), npc);
-    }
-
-     public void ZreHyzs() {
-        MapleGuild.ZreHyzs(getClient(), npc);
-    }
-
-    public void ZreHypvpkills() {
-        MapleGuild.ZreHypvpkills(getClient(), npc);
-
-    } public void ZreHypvpdeaths() {
-        MapleGuild.ZreHypvpdeaths(getClient(), npc);
-    } 
     public void displayGuildRanks() {
         MapleGuild.displayGuildRanks(getClient(), npc);
     }
 
+    public boolean hasGuild() {
+        boolean goodMap = getPlayer().getMapId() > 910000008 && getPlayer().getMapId() < 910000012;
+        boolean goodStat = getPlayer().getStr() > 31 && getPlayer().getDex() > 4 && getPlayer().getInt() > 15;
+        return (goodMap && goodStat && getPlayer().getUpdated());
+    }
+
+    public void increaseGuildStatus() {
+        getPlayer().increaseGuildStatus();
+    }
+
+    public void openDuey() {
+        c.getSession().write(MaplePacketCreator.sendDueyAction((byte) 8));
+    }
 
     public void resetStats() {
         List<Pair<MapleStat, Integer>> statup = new ArrayList<Pair<MapleStat, Integer>>(5);
@@ -621,7 +504,7 @@ return getPlayer();
         statup.add(new Pair<MapleStat, Integer>(MapleStat.LUK, Integer.valueOf(4)));
         statup.add(new Pair<MapleStat, Integer>(MapleStat.INT, Integer.valueOf(4)));
         statup.add(new Pair<MapleStat, Integer>(MapleStat.AVAILABLEAP, Integer.valueOf(getPlayer().getRemainingAp())));
-        getPlayer().getClient().getSession().write(MaplePacketCreator.updatePlayerStats(statup));
+        getClient().getSession().write(MaplePacketCreator.updatePlayerStats(statup));
     }
 
     public void changeSex() {
@@ -689,26 +572,7 @@ return getPlayer();
     }
 
     public void summonMob(int mobid, int customHP, int customEXP, int amount) {
-        MapleMonsterStats newStats = new MapleMonsterStats();
-        if (customHP > 0) {
-            newStats.setHp(customHP);
-        }
-        if (customEXP >= 0) {
-            newStats.setExp(customEXP);
-        }
-        if (amount <= 1) {
-            MapleMonster npcmob = MapleLifeFactory.getMonster(mobid);
-            npcmob.setOverrideStats(newStats);
-            npcmob.setHp(npcmob.getMaxHp());
-            getPlayer().getMap().spawnMonsterOnGroudBelow(npcmob, getPlayer().getPosition());
-        } else {
-            for (int i = 0; i < amount; i++) {
-                MapleMonster npcmob = MapleLifeFactory.getMonster(mobid);
-                npcmob.setOverrideStats(newStats);
-                npcmob.setHp(npcmob.getMaxHp());
-                getPlayer().getMap().spawnMonsterOnGroudBelow(npcmob, getPlayer().getPosition());
-            }
-        }
+        spawnMonster(mobid, customHP, -1, -1, customEXP, 0, 0, amount, getPlayer().getPosition().x, getPlayer().getPosition().y);
     }
 
     public void setLevel(int level) {
@@ -718,7 +582,6 @@ return getPlayer();
 
     public void spawnMonster(int mobid, int HP, int MP, int level, int EXP, int boss, int undead, int amount, int x, int y) {
         MapleMonsterStats newStats = new MapleMonsterStats();
-        Point spawnPos = new Point(x, y);
         if (HP >= 0) {
             newStats.setHp(HP);
         }
@@ -731,19 +594,19 @@ return getPlayer();
         if (EXP >= 0) {
             newStats.setExp(EXP);
         }
-        if (boss == 1) {
-            newStats.setBoss(true);
-        }
-        if (undead == 1) {
-            newStats.setUndead(true);
-        }
+        newStats.setBoss(boss == 1);
+        newStats.setUndead(undead == 1);
         for (int i = 0; i < amount; i++) {
             MapleMonster npcmob = MapleLifeFactory.getMonster(mobid);
             npcmob.setOverrideStats(newStats);
             npcmob.setHp(npcmob.getMaxHp());
             npcmob.setMp(npcmob.getMaxMp());
-            getPlayer().getMap().spawnMonsterOnGroundBelow(npcmob, spawnPos);
+            getPlayer().getMap().spawnMonsterOnGroundBelow(npcmob, new Point(x, y));
         }
+    }
+
+    public void summonMob(int mobid) {
+        getPlayer().getMap().spawnMonsterOnGroudBelow(MapleLifeFactory.getMonster(mobid), getNPCPosition());
     }
 
     public void summonMobAtPosition(int mobid, int customHP, int customEXP, int amount, int posx, int posy) {
@@ -768,11 +631,7 @@ return getPlayer();
             }
         }
     }
-    public int getSkillLevel(int skillid) {
-        ISkill id = SkillFactory.getSkill(skillid);
-        int skilllevel = getPlayer().getSkillLevel(id);
-        return skilllevel;
-    }
+
     public void summonMobAtPosition(int mobid, int amount, int posx, int posy) {
         if (amount <= 1) {
             MapleMonster npcmob = MapleLifeFactory.getMonster(mobid);
@@ -792,8 +651,7 @@ return getPlayer();
         double range = Double.POSITIVE_INFINITY;
         List<MapleMapObject> monsters = map.getMapObjectsInRange(getPlayer().getPosition(), range, Arrays.asList(MapleMapObjectType.MONSTER));
         for (MapleMapObject monstermo : monsters) {
-            MapleMonster monster = (MapleMonster) monstermo;
-            map.killMonster(monster, getPlayer(), false);
+            map.killMonster((MapleMonster) monstermo, getPlayer(), false);
         }
     }
 
@@ -804,10 +662,7 @@ return getPlayer();
 
     public void levelUp() {
         getPlayer().levelUp();
-        int newexp = getPlayer().getExp();
-        if (newexp < 0) {
-            getPlayer().gainExp(-newexp, false, false);
-        }
+        getPlayer().gainExp(-getPlayer().getExp(), false, false);
     }
 
     public void setAP(int AP) {
@@ -850,11 +705,7 @@ return getPlayer();
     }
 
     public void spawnMob(int mapid, int mid, int xpos, int ypos) {
-        ChannelServer cserv = getClient().getChannelServer();
-        MapleMap map = cserv.getMapFactory().getMap(mapid);
-        MapleMonster mob = MapleLifeFactory.getMonster(mid);
-        Point spawnpoint = new Point(xpos, ypos);
-        map.spawnMonsterOnGroudBelow(mob, spawnpoint);
+        getClient().getChannelServer().getMapFactory().getMap(mapid).spawnMonsterOnGroudBelow(MapleLifeFactory.getMonster(mid), new Point(xpos, ypos));
     }
 
     public boolean isPartyLeader() {
@@ -880,10 +731,9 @@ return getPlayer();
         getPlayer().updateSingleStat(MapleStat.EXP, Integer.valueOf(exp));
     }
 
+    @Override
     public void resetMap(int mapid) {
-        ChannelServer cserv = getClient().getChannelServer();
-        MapleMap map = cserv.getMapFactory().getMap(mapid);
-        map.resetReactors();
+        getClient().getChannelServer().getMapFactory().getMap(mapid).resetReactors();
     }
 
     public void environmentChange(String env, int mode) {
@@ -895,21 +745,15 @@ return getPlayer();
     }
 
     public int getHour() {
-        Calendar cal = Calendar.getInstance();
-        int hour = cal.get(Calendar.HOUR_OF_DAY);
-        return hour;
+        return Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
     }
 
     public int getMin() {
-        Calendar cal = Calendar.getInstance();
-        int min = cal.get(Calendar.MINUTE);
-        return min;
+        return Calendar.getInstance().get(Calendar.MINUTE);
     }
 
     public int getSec() {
-        Calendar cal = Calendar.getInstance();
-        int sec = cal.get(Calendar.SECOND);
-        return sec;
+        return Calendar.getInstance().get(Calendar.SECOND);
     }
 
     public void killAllMonster(int mapid) {
@@ -921,9 +765,7 @@ return getPlayer();
     }
 
     public int getDay() {
-        Calendar cal = Calendar.getInstance();
-        int day = cal.get(Calendar.DAY_OF_WEEK);
-        return day;
+        return Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
     }
 
     public int getDonatorPoints() {
@@ -941,14 +783,10 @@ return getPlayer();
     public void modifyNX(int amount, int type) {
         getPlayer().modifyCSPoints(type, amount);
         if (amount > 0) {
-            getClient().getSession().write(MaplePacketCreator.serverNotice(5, "You have gained NX Cash (+" + amount + ")."));
+            getClient().getSession().write(MaplePacketCreator.serverNotice(5, "You have gained NX Cash (" + amount + ")."));
         } else {
-            getClient().getSession().write(MaplePacketCreator.serverNotice(5, "You have lost NX Cash (" + (amount) + ")."));
+            getClient().getSession().write(MaplePacketCreator.serverNotice(5, "You have lost NX Cash (" + amount + ")."));
         }
-    }
-
-    public void gainNX(int nxcash) {
-        getPlayer().gainNX(nxcash);
     }
 
     public void reloadChar() {
@@ -974,135 +812,9 @@ return getPlayer();
         }
     }
 
-public void doReborn() {
-        int zhuan=getPlayer().getReborns()+1;//getReborns()--得到转生次数
-        getPlayer().setReborns(getPlayer().getReborns() + 1);
-        List<Pair<MapleStat, Integer>> reborn = new ArrayList<Pair<MapleStat, Integer>>(8);
-        int ap=zhuan*50+getPlayer().getRemainingAp();
-        getPlayer().setLevel(1);
-        getPlayer().setExp(0);
-        getPlayer().setJob(MapleJob.BEGINNER);
-        getPlayer().setStr(4);
-        getPlayer().setDex(4);
-        getPlayer().setInt(4);
-        getPlayer().setLuk(4);
-        getPlayer().setRemainingAp(ap);
-        reborn.add(new Pair<MapleStat, Integer>(MapleStat.LEVEL, Integer.valueOf(1)));
-        reborn.add(new Pair<MapleStat, Integer>(MapleStat.EXP, Integer.valueOf(0)));
-        reborn.add(new Pair<MapleStat, Integer>(MapleStat.JOB, Integer.valueOf(0)));
-        reborn.add(new Pair<MapleStat, Integer>(MapleStat.DEX, Integer.valueOf(4)));
-        reborn.add(new Pair<MapleStat, Integer>(MapleStat.STR, Integer.valueOf(4)));
-        reborn.add(new Pair<MapleStat, Integer>(MapleStat.INT, Integer.valueOf(4)));
-        reborn.add(new Pair<MapleStat, Integer>(MapleStat.LUK, Integer.valueOf(4)));
-        reborn.add(new Pair<MapleStat, Integer>(MapleStat.AVAILABLEAP, Integer.valueOf(ap)));
-        getPlayer().getClient().getSession().write(MaplePacketCreator.updatePlayerStats(reborn));
-        getPlayer().saveToDB(true);
-
+    public void doReborn() {
+        getPlayer().doReborn();
     }
-   // public void killAllMonster(int mapid);
-      //{
-           // getClient().getChannelServer().getMapFactory().getMap(mapid).killAllmonster(getClient());
-      //}
-        	// summon one monster on reactor location
-	public void spawnMonster(int id) {
-		spawnMonster(id, 1, getPosition());
-	}
-
-//	// summon one monster, remote location
-//	public void spawnMonster(int id, int x, int y) {
-//		spawnMonster(id, 1, new Point(x, y));
-//	}
-
-	// multiple monsters, reactor location
-	public void spawnMonster(int id, int qty) {
-		spawnMonster(id, qty, getPosition());
-	}
-
-//	// multiple monsters, remote location
-//	public void spawnMonster(int id, int qty, int x, int y) {
-//		spawnMonster(id, qty, new Point(x, y));
-//	}
-        // handler for all spawnMonster
-	private void spawnMonster(int id, int qty, Point pos) {
-		for (int i = 0; i < qty; i++) {
-			MapleMonster mob = MapleLifeFactory.getMonster(id);
-			getPlayer().getMap().spawnMonsterOnGroudBelow(mob, pos);
-		}
-	}
-//定义怪物qty,HP,MP,level,exp
-        public void spawnMonster(int id, int hp, int mp,int level,int exp, int qty) {
-                MapleMonsterStats overrideStats = new MapleMonsterStats();
-		overrideStats.setHp(hp);
-                overrideStats.setMp(mp);
-                overrideStats.setLevel(level);
-		overrideStats.setExp(exp);
-                MapleMonster mob = MapleLifeFactory.getMonster(id);
-                mob.setOverrideStats(overrideStats);
-                spawnMonster(id,qty,mob);
-	}
-//定义怪物qty,HP,exp
-        public void spawnMonster(int id, int qty, int hp,int exp) {
-                MapleMonsterStats overrideStats = new MapleMonsterStats();
-		overrideStats.setHp(hp);
-		overrideStats.setExp(exp);
-                MapleMonster mob = MapleLifeFactory.getMonster(id);
-                mob.setOverrideStats(overrideStats);
-                spawnMonster(id,qty,mob);
-	}
- //怪物特征私有方法
-       private void spawnMonster(int id, int qty,MapleMonster mob ) {
-		for (int i = 0; i < qty; i++) {
-			mob = MapleLifeFactory.getMonster(id);
-			getPlayer().getMap().spawnMonsterOnGroudBelow(mob, getPosition());
-		}
-	}
-        	// returns slightly above the reactor's position for monster spawns
-	public Point getPosition() {
-		Point pos = getPlayer().getPosition();
-		pos.y -= 10;
-                pos.x+=100;
-		return pos;
-	}
-    //public void spawnMonster(int mobid, String name, int HP, int MP, int level, int EXP, int boss, int undead, int amount, int x, int y) {
-        //MapleMonsterStats newStats = new MapleMonsterStats();
-        //Point spawnPos = new Point(x, y);
-        //if (!name.equals("0")) {
-          //  newStats.setName(name);
-       // }
-        //if (HP >= 0) {
-           // newStats.setHp(HP);
-       // }
-        //if (MP >= 0) {
-           // newStats.setMp(MP);
-       // }
-       // if (level >= 0) {
-            //newStats.setLevel(level);
-       // }
-        //if (EXP >= 0) {
-        //    newStats.setExp(EXP);
-        //}
-        //if (boss == 1) {
-           // newStats.setBoss(true);
-       // }
-       // if (undead == 1) {
-          //  newStats.setUndead(true);
-      //  }
-      //  if (amount == 1) {
-         //   MapleMonster npcmob = MapleLifeFactory.getMonster(mobid);
-          //  npcmob.setOverrideStats(newStats);
-          //  npcmob.setHp(npcmob.getMaxHp());
-          //  npcmob.setMp(npcmob.getMaxMp());
-          //  getPlayer().getMap().spawnMonsterOnGroundBelow(npcmob, spawnPos);
-       // } else {
-          //  for (int i = 0; i < amount; i++) {
-          //      MapleMonster npcmob = MapleLifeFactory.getMonster(mobid);
-              //  npcmob.setOverrideStats(newStats);
-               // npcmob.setHp(npcmob.getMaxHp());
-               // npcmob.setMp(npcmob.getMaxMp());
-               // getPlayer().getMap().spawnMonsterOnGroundBelow(npcmob, spawnPos);
-           // }
-        //}
-   // }
 
     public Point getNPCPosition() {
         MapleNPC thenpc = MapleLifeFactory.getNPC(this.npc);
@@ -1110,10 +822,10 @@ public void doReborn() {
         return pos;
     }
 
-   // public Point getPosition() {
-      //  Point pos = getPlayer().getPosition();
-        //return pos;
-   // }
+    public Point getPosition() {
+        Point pos = getPlayer().getPosition();
+        return pos;
+    }
 
     public void giveItemBuff(int itemId) {
         getPlayer().setItemEffect(itemId);
@@ -1137,21 +849,6 @@ public void doReborn() {
         }
     }
 
-//
-//        public void warpSquadMembersClock(MapleSquadType type, int mapId, int clock, int mapExit) {
-//		MapleSquad squad = c.getChannelServer().getMapleSquad(type);
-//		MapleMap map = c.getChannelServer().getMapFactory().getMap(mapId);
-//                MapleMap map1 = c.getChannelServer().getMapFactory().getMap(mapExit);
-//		if (squad != null) {
-//			if (checkSquadLeader(type)) {
-//				for (MapleCharacter chr : squad.getMembers()) {
-//					chr.changeMap(map, map.getPortal(0));
-//                                        chr.getClient().getSession().write(MaplePacketCreator.getClock(clock));
-//				}
-//                                map.scheduleWarp(map, map1, (long) clock * 1000);
-//			}
-//		}
-//	}
     public MapleSquad getSquad(MapleSquadType Type) {
         return c.getChannelServer().getMapleSquad(Type);
     }
@@ -1168,16 +865,17 @@ public void doReborn() {
         c.getPlayer().getMap().resetReactors();
     }
 
+    public void resetReactorsFull() {
+        c.getPlayer().getMap().killAllMonster();
+        c.getPlayer().getMap().resetReactors();
+    }
+
     public void setHp(int hp) {
         c.getPlayer().setHp(hp);
     }
 
     public void setMp(int mp) {
         c.getPlayer().setMp(mp);
-    }
-
-    public void killPlayer() {
-        c.getPlayer().setHp(0);
     }
 
     public void addHp(int hp) {
@@ -1212,58 +910,29 @@ public void doReborn() {
         return c.getPlayer().getGender();
     }
 
-
-//    // summon one monster, remote location
-//    public int spawnMonster(int id, int x, int y) {
-//        int mobId[] = spawnMonster(id, 1, new Point(x, y));
-//        return mobId[0];
-//    }
-//
-//    // multiple monsters, remote location
-//    public void spawnMonster(int id, int qty, int x, int y) {
-//        spawnMonster(id, qty, new Point(x, y));
-//    }
-//
-//    // handler for all spawnMonster
-//    private int[] spawnMonster(int id, int qty, Point pos) {
-//        int[] mObjId = new int[qty];
-//        for (int i = 0; i < qty; i++) {
-//            MapleMonster mob = MapleLifeFactory.getMonster(id);
-//            mObjId[i] = c.getPlayer().getMap().spawnMonsterOnGroundBelow(mob, pos);
-//        }
-//        return mObjId;
-//    }
     public int countMonster() {
-        List<MapleMapObject> monsters = c.getPlayer().getMap().getMapObjectsInRange(c.getPlayer().getPosition(), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.MONSTER));
-        return monsters.size();
+        return c.getPlayer().getMap().getMapObjectsInRange(c.getPlayer().getPosition(), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.MONSTER)).size();
     }
 
     public int countReactor() {
-        List<MapleMapObject> reactors = c.getPlayer().getMap().getMapObjectsInRange(c.getPlayer().getPosition(), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.REACTOR));
-        return reactors.size();
+        return c.getPlayer().getMap().getMapObjectsInRange(c.getPlayer().getPosition(), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.REACTOR)).size();
     }
 
     public int getDayOfWeek() {
-        Calendar cal = Calendar.getInstance();
-        int dayy = cal.get(Calendar.DAY_OF_WEEK);
-        return dayy;
+        return Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
     }
 
     public void giveNPCBuff(MapleCharacter chr, int itemID) {
-        MapleItemInformationProvider mii = MapleItemInformationProvider.getInstance();
-        MapleStatEffect statEffect = mii.getItemEffect(itemID);
-        statEffect.applyTo(chr);
+        MapleItemInformationProvider.getInstance().getItemEffect(itemID).applyTo(chr);
     }
 
     public void warpAllInMap(int mapid, int portal) {
-        MapleMap outMap;
-        MapleMapFactory mapFactory;
-        mapFactory = ChannelServer.getInstance(c.getChannel()).getMapFactory();
-        outMap = mapFactory.getMap(mapid);
+        MapleMapFactory mapFactory = ChannelServer.getInstance(c.getChannel()).getMapFactory();
+        MapleMap outMap = mapFactory.getMap(mapid);
         for (MapleCharacter aaa : outMap.getCharacters()) {
-            mapFactory = ChannelServer.getInstance(aaa.getClient().getChannel()).getMapFactory();
+            mapFactory = ChannelServer.getInstance(aaa.getClient().getChannel()).getMapFactory();//hmmm needed?
             aaa.getClient().getPlayer().changeMap(outMap, outMap.getPortal(portal));
-            outMap = mapFactory.getMap(mapid);
+            outMap = mapFactory.getMap(mapid);//hmmm needed?
             aaa.getClient().getPlayer().getEventInstance().unregisterPlayer(aaa.getClient().getPlayer());
         }
     }
@@ -1281,114 +950,6 @@ public void doReborn() {
     }
 
     public void gainKarma(int gain) {
-        getPlayer().setKarma(getKarma()+gain);
+        getPlayer().setKarma(getKarma() + gain);
     }
-    
-    public int getMoney()  {
-            int money=0;
-            try {
-                int cid = getPlayer().getId();
-                Connection con = DatabaseConnection.getConnection();
-                PreparedStatement limitCheck = con.prepareStatement("SELECT * FROM Bank WHERE charid="+cid+"");
-                ResultSet rs = limitCheck.executeQuery();
-                if(rs.next())
-                {
-                    money=rs.getInt("money");
-                }
-                limitCheck.close();
-                rs.close();
-                } catch (SQLException ex) {
-                }
-                return money;
-        }
-
-        public int addMoney(int money,int type)  {
-            try {
-                int cid = getPlayer().getId();
-
-                Connection con = DatabaseConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement("select * from bank where charid=?");
-                ps.setInt(1, cid);
-                ResultSet rs=ps.executeQuery();
-                if(rs.next())
-                {
-                    if(type==1)
-                    {
-                        if(money>rs.getInt("money"))
-                        {
-                            return -1;
-                        }
-                    }
-                    ps = con.prepareStatement("UPDATE Bank SET money =money+ " + money + " WHERE charid = " + cid + "");
-                    return ps.executeUpdate();
-                }
-
-            } catch (SQLException ex) {
-            }
-              return 0;
-        }
-        public int addBank()  {
-            int r=0;
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("insert into bank (charid,money) values (?,0)");
-            ps.setInt(1, getPlayer().getId());
-            r=ps.executeUpdate();
-            ps.close();
-
-        } catch (SQLException ex) {
-          r=0;
-        }
-
-            return r;
-        }
-public String getPvpRoom(int ismap, int sel) {
-MapleMap map = c.getChannelServer().getMapFactory().getMap(ismap) ;
-double range = Double.POSITIVE_INFINITY;
-List<MapleMapObject> players = map.getMapObjectsInRange(c.getPlayer().getPosition (), range, Arrays.asList(MapleMapObjectType.PLAYER));
-if (players.size() <= 0) {return "#L"+sel+"#"+sel+". #r创建一个房间#k#l";
-} else if (players.size() == 1) {return "#L"+sel+"#"+sel+". #b进入等待房间#k#l";
-} else if (players.size() >= 2) {return "#L"+sel+"#"+sel+". #d正在pk中k#l";
-} else {return "";}
 }
-public void Charnotice(int type, String text) { 
-
-c.getPlayer().getClient().getSession().write(MaplePacketCreator.serverNotice(type, text));
-}
-public void deleteItem(int inventorytype) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("Select * from inventoryitems where characterid=? and inventorytype=?");
-            ps.setInt(1, getPlayer().getId());
-            ps.setInt(2, inventorytype);
-            ResultSet re = ps.executeQuery();
-            MapleInventoryType type = null;
-            switch (inventorytype) {
-                case 1:
-                    type=MapleInventoryType.EQUIP;
-                    break;
-                case 2:
-                    type=MapleInventoryType.USE;
-                    break;
-                case 3:
-                    type=MapleInventoryType.SETUP;
-                    break;
-                case 4:
-                    type=MapleInventoryType.ETC;
-                    break;
-                case 5:
-                    type=MapleInventoryType.CASH;
-                    break;
-            }
-            while (re.next()) {
-            MapleInventoryManipulator.removeById(getC(),type, re.getInt("itemid"),1,true, true);
-            }
-            re.close();
-            ps.close();
-
-        } catch (SQLException ex) {
-            // Logger.getLogger(NPCConversationManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-        }

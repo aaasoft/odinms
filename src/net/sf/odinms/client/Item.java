@@ -1,27 +1,5 @@
-/*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
-                       Matthias Butz <matze@odinms.de>
-                       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License version 3
-    as published by the Free Software Foundation. You may not use, modify
-    or distribute this program under any other version of the
-    GNU Affero General Public License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package net.sf.odinms.client;
 
-//import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,8 +13,6 @@ public class Item implements IItem {
 	private int petid;
 	private String owner = "";
 	protected List<String> log;
-	//private List<Integer> petsCanConsume = new ArrayList<Integer>();
-	//private static Logger log = LoggerFactory.getLogger(Item.class);
 
 	public Item (int id, byte position, short quantity) {
 		super();
@@ -55,21 +31,6 @@ public class Item implements IItem {
 		this.petid = petid;
 		this.log = new LinkedList<String>();
 	}
-	
-	// public static void loadInitialDataFromDB() {
-	// try {
-	// Connection con = DatabaseConnection.getConnection();
-	// PreparedStatement ps = con.prepareStatement("SELECT MAX(inventoryitemid) " + "FROM inventoryitems");
-	// ResultSet rs = ps.executeQuery();
-	// if (rs.next()) {
-	// lastOID = rs.getInt(1);
-	// } else {
-	// throw new DatabaseException("Could not retrieve current item OID");
-	// }
-	// } catch (SQLException e) {
-	// log.error(e.toString());
-	// }
-	// }
 
 	public IItem copy() {
 		Item ret = new Item(id, position, quantity, petid);
@@ -135,29 +96,11 @@ public class Item implements IItem {
 		return "Item: " + id + " quantity: " + quantity;
 	}
 
-	// no op for now as it eats too much ram :( once we have persistent inventoryids we can reenable it in some form.
-	public void log(String msg,boolean fromDB) {
-		// if (!fromDB) {
-		// StringBuilder toLog = new StringBuilder("[");
-		// toLog.append(Calendar.getInstance().getTime().toString());
-		// toLog.append("] ");
-		// toLog.append(msg);
-		// log.add(toLog.toString());
-		// } else {
-		// log.add(msg);
-		//		}
-	}
-
 	public List<String> getLog() {
 		return Collections.unmodifiableList(log);
 	}
-	
-/*	public void setPetsCanConsume(List<Integer> pets) {
-		this.petsCanConsume = pets;
-	}
-	
-	public List<Integer> getPetsCanConsume() {
-		return Collections.unmodifiableList(petsCanConsume);
-	}*/
+
+    public void log(String msg, boolean fromDB) {
+    }
 }
  

@@ -1,11 +1,9 @@
 package net.sf.odinms.client;
 
 import java.awt.Point;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,8 +36,7 @@ public class MaplePet extends Item {
     public static MaplePet loadFromDb(int itemid, byte position, int petid) {
         try {
             MaplePet ret = new MaplePet(itemid, position, petid);
-            Connection con = DatabaseConnection.getConnection(); // Get a connection to the database
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM pets WHERE petid = ?"); // Get pet details..
+            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("SELECT * FROM pets WHERE petid = ?"); // Get pet details..
             ps.setInt(1, petid);
             ResultSet rs = ps.executeQuery();
             rs.next();
@@ -58,8 +55,7 @@ public class MaplePet extends Item {
 
     public void saveToDb() {
         try {
-            Connection con = DatabaseConnection.getConnection(); // Get a connection to the database
-            PreparedStatement ps = con.prepareStatement("UPDATE pets SET name = ?, level = ?, closeness = ?, fullness = ? WHERE petid = ?");
+            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("UPDATE pets SET name = ?, level = ?, closeness = ?, fullness = ? WHERE petid = ?");
             ps.setString(1, getName()); // Set name
             ps.setInt(2, getLevel()); // Set Level
             ps.setInt(3, getCloseness()); // Set Closeness
@@ -74,38 +70,29 @@ public class MaplePet extends Item {
 
     public static int createPet(int itemid) {
         try {
-            MapleItemInformationProvider mii = MapleItemInformationProvider.getInstance();
-
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("INSERT INTO pets (name, level, closeness, fullness) VALUES (?, ?, ?, ?)");
-            ps.setString(1, mii.getName(itemid));
+            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("INSERT INTO pets (name, level, closeness, fullness) VALUES (?, ?, ?, ?)");
+            ps.setString(1, MapleItemInformationProvider.getInstance().getName(itemid));
             ps.setInt(2, 1);
             ps.setInt(3, 0);
             ps.setInt(4, 100);
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             rs.next();
-            int ret = rs.getInt(1);
             rs.close();
             ps.close();
-
-            return ret;
+            return rs.getInt(1);
         } catch (SQLException ex) {
             Logger.getLogger(MaplePet.class.getName()).log(Level.SEVERE, null, ex);
             return -1;
         }
-
     }
 
     public static void deletePet(int itemid, MapleClient c) {
         try {
-            IItem player = c.getPlayer().getInventory(MapleInventoryType.CASH).findById(itemid);
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("DELETE FROM pets WHERE `petid` = ?");
-            ps.setInt(1, player.getPetId());
+            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("DELETE FROM pets WHERE `petid` = ?");
+            ps.setInt(1, c.getPlayer().getInventory(MapleInventoryType.CASH).findById(itemid).getPetId());
             ps.executeUpdate();
             ps.close();
-
         } catch (SQLException ex) {
             Logger.getLogger(MaplePet.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -177,8 +164,7 @@ public class MaplePet extends Item {
     }
 
     public boolean canConsume(int itemId) {
-        MapleItemInformationProvider mii = MapleItemInformationProvider.getInstance();
-        for (int petId : mii.petsCanConsume(itemId)) {
+        for (int petId : MapleItemInformationProvider.getInstance().petsCanConsume(itemId)) {
             if (petId == this.getItemId()) {
                 return true;
             }
@@ -190,8 +176,7 @@ public class MaplePet extends Item {
         for (LifeMovementFragment move : movement) {
             if (move instanceof LifeMovement) {
                 if (move instanceof AbsoluteLifeMovement) {
-                    Point position = ((LifeMovement) move).getPosition();
-                    this.setPos(position);
+                    this.setPos(((LifeMovement) move).getPosition());
                 }
                 this.setStance(((LifeMovement) move).getNewstate());
             }

@@ -74,25 +74,19 @@ public class LoginCryptoLegacy {
 		String out = null;
 		int count = 8;
 		MessageDigest digester;
-
-		// Check for correct Seed
 		if (!seed.substring(0, 3).equals("$H$")) {
-			// Oh noes! Generate a seed and continue.
 			byte[] randomBytes = new byte[6];
 			java.util.Random randomGenerator = new java.util.Random();
 			randomGenerator.nextBytes(randomBytes);
 			seed = genSalt(randomBytes);
 		}
-
 		String salt = seed.substring(4, 12);
 		if (salt.length() != 8) {
 			throw new RuntimeException("Error hashing password - Invalid seed.");
 		}
-
 		byte[] sha1Hash = new byte[40];
 		try {
 			digester = MessageDigest.getInstance("SHA-1");
-
 			digester.update((salt + password).getBytes("iso-8859-1"), 0, (salt + password).length());
 			sha1Hash = digester.digest();
 			do {
@@ -140,7 +134,6 @@ public class LoginCryptoLegacy {
 
 		int oDataLen = (iLen * 4 + 2) / 3; // output length without padding
 		int oLen = ((iLen + 2) / 3) * 4; // output length including
-		// padding
 		char[] out = new char[oLen];
 		int ip = 0;
 		int op = 0;

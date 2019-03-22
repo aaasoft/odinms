@@ -2,10 +2,8 @@ package net.sf.odinms.server;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-
 import net.sf.odinms.database.DatabaseConnection;
 import net.sf.odinms.net.channel.ChannelServer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +27,6 @@ public class ShutdownServer implements Runnable {
         } catch (Throwable t) {
             log.error("SHUTDOWN ERROR", t);
         }
-
         int c = 200;
         while (ChannelServer.getInstance(myChannel).getConnectedClients() > 0 && c > 0) {
             try {
@@ -42,14 +39,12 @@ public class ShutdownServer implements Runnable {
         try {
             ChannelServer.getWorldRegistry().deregisterChannelServer(myChannel);
         } catch (RemoteException e) {
-            // we are shutting down
         }
         try {
             ChannelServer.getInstance(myChannel).unbind();
         } catch (Throwable t) {
             log.error("SHUTDOWN ERROR", t);
         }
-
         boolean allShutdownFinished = true;
         for (ChannelServer cserv : ChannelServer.getAllInstances()) {
             if (!cserv.hasFinishedShutdown()) {
@@ -63,8 +58,7 @@ public class ShutdownServer implements Runnable {
             } catch (SQLException e) {
                 log.error("THROW", e);
             }
-
-            System.exit(0); // still can't exit without system.exit ;_;
+            System.exit(0);
         }
     }
 }

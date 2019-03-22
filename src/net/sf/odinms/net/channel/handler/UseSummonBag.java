@@ -7,7 +7,6 @@ import net.sf.odinms.net.AbstractMaplePacketHandler;
 import net.sf.odinms.server.MapleInventoryManipulator;
 import net.sf.odinms.server.MapleItemInformationProvider;
 import net.sf.odinms.server.life.MapleLifeFactory;
-import net.sf.odinms.server.life.MapleMonster;
 import net.sf.odinms.tools.MaplePacketCreator;
 import net.sf.odinms.tools.data.input.SeekableLittleEndianAccessor;
 
@@ -40,8 +39,7 @@ public class UseSummonBag extends AbstractMaplePacketHandler {
             for (int z = 0; z < toSpawn.length; z++) {
                 int[] toSpawnChild = toSpawn[z];
                 if ((int) Math.ceil(Math.random() * 100) <= toSpawnChild[1]) {
-                    MapleMonster ht = MapleLifeFactory.getMonster(toSpawnChild[0]);
-                    c.getPlayer().getMap().spawnMonsterOnGroudBelow(ht, c.getPlayer().getPosition());
+                    c.getPlayer().getMap().spawnMonsterOnGroudBelow(MapleLifeFactory.getMonster(toSpawnChild[0]), c.getPlayer().getPosition());
                 }
             }
         } else {

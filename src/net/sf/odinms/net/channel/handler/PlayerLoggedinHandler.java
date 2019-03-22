@@ -7,14 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
 import net.sf.odinms.client.BuddylistEntry;
 import net.sf.odinms.client.CharacterNameAndId;
 import net.sf.odinms.client.MapleCharacter;
-import net.sf.odinms.net.MaplePacket;
 import net.sf.odinms.client.MapleClient;
 import net.sf.odinms.client.MapleQuestStatus;
 import net.sf.odinms.client.SkillFactory;
@@ -92,22 +88,12 @@ public class PlayerLoggedinHandler extends AbstractMaplePacketHandler {
             c.getChannelServer().reconnectWorld();
         }
         c.getSession().write(MaplePacketCreator.getCharInfo(player));
-
-try {
-Connection con = DatabaseConnection.getConnection();
-PreparedStatement ps = con.prepareStatement("SELECT * FROM dueypackages WHERE RecieverId = ? and checked = 1");
-ps.setInt(1, c.getPlayer().getId());
-ResultSet rs = ps.executeQuery();
-if (rs.next()) {
-DueyHandler.reciveMsg(c, c.getPlayer().getId());
-}
-ps.close();
-rs.close();
-} catch (SQLException se) {
-se.printStackTrace();
-}
-
-       
+        if (player.isGM()) {
+            int[] skills = {4201003, 2301004, 1301007, 2311003, 9101004};
+            for (int i : skills) {
+                SkillFactory.getSkill(i).getEffect(SkillFactory.getSkill(i).getMaxLevel()).applyTo(player);
+            }
+        }
         player.getMap().addPlayer(player);
         try {
             Collection<BuddylistEntry> buddies = player.getBuddylist().getBuddies();
@@ -200,58 +186,6 @@ se.printStackTrace();
             }
         }
         player.checkMessenger();
-
-                if (c.getPlayer().vip == 5) {
-        MaplePacket packet = MaplePacketCreator.serverNotice(6, "【VIP5上线】：热烈欢迎  " + c.getPlayer().getName() + "  来到梦の岛 梦开始的地方！");
-            try {
-                c.getChannelServer().getWorldInterface().broadcastMessage(c.getPlayer().getName(), packet.getBytes());
-                } catch (RemoteException e) {
-                c.getChannelServer().reconnectWorld();
-            }
-       }else if (c.getPlayer().vip == 3) {
-        MaplePacket packet = MaplePacketCreator.serverNotice(6, "【VIP3上线】：热烈欢迎  " + c.getPlayer().getName() + "  来到梦の岛 梦开始的地方！");
-            try {
-                c.getChannelServer().getWorldInterface().broadcastMessage(c.getPlayer().getName(), packet.getBytes());
-                } catch (RemoteException e) {
-                c.getChannelServer().reconnectWorld();
-            }
-          }else if (c.getPlayer().vip == 1) {
-        MaplePacket packet = MaplePacketCreator.serverNotice(6, "【VIP1上线】：热烈欢迎  " + c.getPlayer().getName() + "  来到梦の岛 梦开始的地方！");
-            try {
-                c.getChannelServer().getWorldInterface().broadcastMessage(c.getPlayer().getName(), packet.getBytes());
-                } catch (RemoteException e) {
-                c.getChannelServer().reconnectWorld();
-            }
-        }else if (c.getPlayer().vip == 2) {
-        MaplePacket packet = MaplePacketCreator.serverNotice(6, "【VIP2上线】：热烈欢迎  " + c.getPlayer().getName() + "  来到梦の岛 梦开始的地方！");
-            try {
-                c.getChannelServer().getWorldInterface().broadcastMessage(c.getPlayer().getName(), packet.getBytes());
-                } catch (RemoteException e) {
-                c.getChannelServer().reconnectWorld();
-            }
-       }else if (c.getPlayer().vip == 4) {
-        MaplePacket packet = MaplePacketCreator.serverNotice(6, "【VIP4上线】：热烈欢迎  " + c.getPlayer().getName() + "  来到梦の岛 梦开始的地方！");
-            try {
-                c.getChannelServer().getWorldInterface().broadcastMessage(c.getPlayer().getName(), packet.getBytes());
-                } catch (RemoteException e) {
-                c.getChannelServer().reconnectWorld();
-            }
-               }else if (c.getPlayer().vip == 0 && player.getLevel() >= 180) {
-        MaplePacket packet = MaplePacketCreator.serverNotice(6, "【超级玩家上线】：热烈欢迎  " + c.getPlayer().getName() + "  来到梦の岛 梦开始的地方！");
-            try {
-                c.getChannelServer().getWorldInterface().broadcastMessage(c.getPlayer().getName(), packet.getBytes());
-                } catch (RemoteException e) {
-                c.getChannelServer().reconnectWorld();
-            }
-        }else if (c.getPlayer().vip == 0) {
-        MaplePacket packet = MaplePacketCreator.serverNotice(6, "【玩家上线】：热烈欢迎  " + c.getPlayer().getName() + "  来到梦の岛 梦开始的地方！");
-            try {
-                c.getChannelServer().getWorldInterface().broadcastMessage(c.getPlayer().getName(), packet.getBytes());
-                } catch (RemoteException e) {
-                c.getChannelServer().reconnectWorld();
-            }
-        }
-
         player.checkBerserk();
     }
 }

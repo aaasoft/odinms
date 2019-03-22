@@ -21,7 +21,6 @@ public class UseCatchItem extends AbstractMaplePacketHandler {
         slea.readShort();
         int itemid = slea.readInt();
         int monsterid = slea.readInt();
-
         MapleMonster mob = c.getPlayer().getMap().getMonsterByOid(monsterid);
         if (mob != null) {
             if (mob.getHp() <= mob.getMaxHp() / 2) {

@@ -2,7 +2,6 @@ package net.sf.odinms.net.channel.handler;
 
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
-
 import net.sf.odinms.client.ISkill;
 import net.sf.odinms.client.MapleCharacter;
 import net.sf.odinms.client.MapleCharacter.CancelCooldownAction;
@@ -29,7 +28,6 @@ public class MagicDamageHandler extends AbstractDealDamageHandler {
 		player.getMap().broadcastMessage(player, packet, false, true);
 		MapleStatEffect effect = attack.getAttackEffect(c.getPlayer());
 		int maxdamage;
-		// TODO fix magic damage calculation
 		maxdamage = 99999;
 		ISkill skill = SkillFactory.getSkill(attack.skill);
 		int skillLevel = c.getPlayer().getSkillLevel(skill);

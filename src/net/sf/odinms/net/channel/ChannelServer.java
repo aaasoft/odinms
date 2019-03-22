@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -64,7 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ChannelServer implements Runnable, ChannelServerMBean {
-    private int maxstat;
+
     private static int uniqueID = 1;
     private int port = 7575;
     private static Properties initialProp;
@@ -75,9 +74,7 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
     private int expRate,  mesoRate,  dropRate,  bossdropRate,  petExpRate,  mountExpRate,  shopMesoRate;
     private boolean gmWhiteText,  cashshop,  dropUndroppables,  moreThanOne;
     private int channel;
-    private int energyRate;
     private String key;
-    private String botName;
     private Properties props = new Properties();
     private ChannelWorldInterface cwi;
     private WorldChannelInterface wci = null;
@@ -85,7 +82,6 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
     private String ip;
     public boolean orbgain;
     private boolean shutdown = false,  finishedShutdown = false;
-    private static boolean autoexp;
     private String arrayString = "";
     private MapleMapFactory mapFactory;
     private EventScriptManager eventSM;
@@ -100,8 +96,6 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
     private int instanceId = 0;
     private boolean mts;
 
-
-
     private ChannelServer(String key) {
         mapFactory = new MapleMapFactory(MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Map.wz")), MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/String.wz")));
         this.key = key;
@@ -110,18 +104,11 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
     public static WorldRegistry getWorldRegistry() {
         return worldRegistry;
     }
-public int getMaxStat(){
-return maxstat;
-}
-    public String getBotName() {
-        return botName;
-    }
 
     public int getInstanceId() {
         return instanceId;
     }
 
- 
     public void setInstanceId(int k) {
         instanceId = k;
     }
@@ -129,24 +116,7 @@ return maxstat;
     public void addInstanceId() {
         instanceId++;
     }
-    public boolean isautoexp()
-    {
-        try
-        {
-            InputStreamReader is = new FileReader("world.properties");
-            props.load(is);
-            is.close();
-        }
-        catch (Exception ex)
-        {
-            ex.getStackTrace();
-        }
-        String autostate = props.getProperty("net.sf.odinms.net.autoexp");
-        if (autostate.equals("true"))
-            return autoexp = true;
-        else
-            return autoexp = false;
-    }
+
     public void reconnectWorld() {
         // check if the connection is really gone
         try {
@@ -175,7 +145,6 @@ return maxstat;
                         wci = worldRegistry.registerChannelServer(key, cwi);
                         props = wci.getGameProperties();
                         expRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.exp"));
-                        energyRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.energy"));
                         mesoRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.meso"));
                         dropRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.drop"));
                         bossdropRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.bossdrop"));
@@ -189,7 +158,6 @@ return maxstat;
                         gmWhiteText = Boolean.parseBoolean(props.getProperty("net.sf.odinms.world.gmWhiteText", "false"));
                         cashshop = Boolean.parseBoolean(props.getProperty("net.sf.odinms.world.cashshop", "false"));
                         mts = Boolean.parseBoolean(props.getProperty("net.sf.odinms.world.mts", "false"));
-                        maxstat = Integer.parseInt(props.getProperty("net.sf.odinms.world.maxstat"));
                         Properties dbProp = new Properties();
                         fr = new FileReader("db.properties");
                         dbProp.load(fr);
@@ -216,7 +184,6 @@ return maxstat;
             wci = worldRegistry.registerChannelServer(key, cwi);
             props = wci.getGameProperties();
             expRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.exp"));
-            energyRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.energy"));
             mesoRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.meso"));
             dropRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.drop"));
             bossdropRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.bossdrop"));
@@ -229,7 +196,6 @@ return maxstat;
             moreThanOne = Boolean.parseBoolean(props.getProperty("net.sf.odinms.world.morethanone", "false"));
             eventSM = new EventScriptManager(this, props.getProperty("net.sf.odinms.channel.events").split(","));
             gmWhiteText = Boolean.parseBoolean(props.getProperty("net.sf.odinms.world.gmWhiteText", "false"));
-            maxstat = Integer.parseInt(props.getProperty("net.sf.odinms.world.maxstat"));
             cashshop = Boolean.parseBoolean(props.getProperty("net.sf.odinms.world.cashshop", "false"));
             mts = Boolean.parseBoolean(props.getProperty("net.sf.odinms.world.mts", "false"));
             Properties dbProp = new Properties();
@@ -268,11 +234,11 @@ return maxstat;
         try {
             MapleServerHandler serverHandler = new MapleServerHandler(PacketProcessor.getProcessor(PacketProcessor.Mode.CHANNELSERVER), channel);
             acceptor.bind(new InetSocketAddress(port), serverHandler, cfg);
-            log.info("频道 {}: 监听端口 {}", getChannel(), port);
+            log.info("Channel {}: Listening on port {}", getChannel(), port);
             wci.serverReady();
             eventSM.init();
         } catch (IOException e) {
-            log.error("端口错误 " + port + " 失败 (ch: " + getChannel() + ")", e);
+            log.error("Binding to port " + port + " failed (ch: " + getChannel() + ")", e);
         }
     }
 
@@ -371,11 +337,8 @@ return maxstat;
             chr.getClient().getSession().write(data);
         }
     }
-     public int getEnergyRate() {
-        return energyRate;
-    }
-    @Override
 
+    @Override
     public int getExpRate() {
         return expRate;
     }
@@ -383,9 +346,6 @@ return maxstat;
     @Override
     public void setExpRate(int expRate) {
         this.expRate = expRate;
-    }
-public void setEnergyRate(int energyRate) {
-        this.energyRate = energyRate;
     }
 
     public String getArrayString() {

@@ -1,4 +1,3 @@
-
 package net.sf.odinms.server.life;
 
 import net.sf.odinms.client.MapleClient;

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import net.sf.odinms.provider.MapleData;
 import net.sf.odinms.provider.MapleDataProvider;
 import net.sf.odinms.provider.MapleDataProviderFactory;
@@ -15,7 +14,6 @@ import net.sf.odinms.provider.wz.MapleDataType;
 import net.sf.odinms.server.maps.MapleMapFactory;
 import net.sf.odinms.tools.Pair;
 import net.sf.odinms.tools.StringUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +77,6 @@ public class MapleLifeFactory {
 					stats.setTagBgColor(MapleDataTool.getIntConvert("hpTagBgcolor", monsterInfoData));
 				}
 			}
-			
 			for (MapleData idata : monsterData) {
 				if (!idata.getName().equals("info")) {
 					int delay = 0;
@@ -89,7 +86,6 @@ public class MapleLifeFactory {
 					stats.setAnimationTime(idata.getName(), delay);
 				}
 			}
-			
 			MapleData reviveInfo = monsterInfoData.getChildByPath("revive");
 			if (reviveInfo != null) {
 				List<Integer> revives = new LinkedList<Integer>();
@@ -98,9 +94,7 @@ public class MapleLifeFactory {
 				}
 				stats.setRevives(revives);
 			}
-			
 			decodeElementalString(stats, MapleDataTool.getString("elemAttr", monsterInfoData, ""));
-			
 			MapleData monsterSkillData = monsterInfoData.getChildByPath("skill");
 			if (monsterSkillData != null) {
 				int i = 0;
@@ -111,7 +105,6 @@ public class MapleLifeFactory {
 				}
 				stats.setSkills(skills);
 			}
-			
 			monsterStats.put(Integer.valueOf(mid), stats);
 		}
 		MapleMonster ret = new MapleMonster(mid, stats);

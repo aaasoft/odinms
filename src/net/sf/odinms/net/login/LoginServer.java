@@ -53,7 +53,6 @@ public class LoginServer implements Runnable, LoginServerMBean {
     private long rankingInterval;
     private static LoginServer instance = new LoginServer();
 
-
     static {
         MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
         try {
@@ -107,7 +106,7 @@ public class LoginServer implements Runnable, LoginServerMBean {
             rs.close();
             limitCheck.close();
         } catch (Exception ex) {
-            log.error("连接出错!", ex);
+            log.error("loginlimit error", ex);
         }
         return ret;
     }
@@ -125,7 +124,7 @@ public class LoginServer implements Runnable, LoginServerMBean {
                         return;
                     }
                 }
-                log.warn("重新启动服务器~");
+                log.warn("Reconnecting to world server");
                 synchronized (wli) {
                     try {
                         FileReader fileReader = new FileReader(System.getProperty("net.sf.odinms.login.config"));
@@ -156,7 +155,7 @@ public class LoginServer implements Runnable, LoginServerMBean {
                             log.info("Could not load subnet configuration, falling back to world defaults", e);
                         }
                     } catch (Exception e) {
-                        log.error("重新连接失败~", e);
+                        log.error("Reconnecting failed", e);
                     }
                     worldReady = Boolean.TRUE;
                 }
@@ -199,7 +198,7 @@ public class LoginServer implements Runnable, LoginServerMBean {
                 log.trace("Could not load subnet configuration, falling back to world defaults", e);
             }
         } catch (Exception e) {
-            throw new RuntimeException("无法连接到世界服务器.", e);
+            throw new RuntimeException("Could not connect to world server.", e);
         }
         ByteBuffer.setUseDirectBuffers(false);
         ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
@@ -215,14 +214,14 @@ public class LoginServer implements Runnable, LoginServerMBean {
         tMan.register(new RankingWorker(), rankingInterval);
         try {
             acceptor.bind(new InetSocketAddress(PORT), new MapleServerHandler(PacketProcessor.getProcessor(PacketProcessor.Mode.LOGINSERVER)), cfg);
-            log.info("监听服务端的端口 {}", PORT);
+            log.info("Listening on port {}", PORT);
         } catch (IOException e) {
-            log.error("连接端口 {} 失败", PORT, e);
+            log.error("Binding to port {} failed", PORT, e);
         }
     }
 
     public void shutdown() {
-        log.info("关闭....");
+        log.info("Shutting down...");
         try {
             worldRegistry.deregisterLoginServer(lwi);
         } catch (RemoteException e) {
@@ -247,7 +246,7 @@ public class LoginServer implements Runnable, LoginServerMBean {
         try {
             LoginServer.getInstance().run();
         } catch (Exception ex) {
-            log.error("初始化信息!", ex);
+            log.error("Error initializing loginserver", ex);
         }
     }
 

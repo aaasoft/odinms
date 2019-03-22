@@ -4,17 +4,14 @@ import java.util.regex.Pattern;
 
 public class MapleCharacterUtil {
 
-    private static Pattern namePattern = Pattern.compile("[a-zA-Z0-9_-]{3,12}");
-
     private MapleCharacterUtil() {}
     
     public static boolean canCreateChar(String name, int world) {
-        if (!isNameLegal(name) || MapleCharacter.getIdByName(name, world) != -1) return false;
-        return true;
+        return isNameLegal(name) && MapleCharacter.getIdByName(name, world) < 0;
     }
     public static boolean isNameLegal(String name) {
         if (name.length() < 3 || name.length() > 12) return false;
-        return namePattern.matcher(name).matches();
+        return Pattern.compile("[a-zA-Z0-9_-]{3,12}").matcher(name).matches();
     }
     public static String makeMapleReadable(String in) {
         String wui = in.replace('I', 'i');
