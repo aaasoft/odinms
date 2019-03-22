@@ -10,6 +10,7 @@ public interface MaplePortal {
     public final int DOOR_PORTAL = 6;
     public static boolean OPEN = true;
     public static boolean CLOSED = false;
+    public static final boolean CLOSE=false;
 
     int getType();
     int getId();

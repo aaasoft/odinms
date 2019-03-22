@@ -121,7 +121,12 @@ public class MapleGenericPortal implements MaplePortal {
             if (pto == null) { // fallback for missing portals - no real life case anymore - intresting for not implemented areas
                 pto = to.getPortal(0);
             }
-            c.getPlayer().changeMap(to, pto); //late resolving makes this harder but prevents us from loading the whole world at once
+            if (getTargetMapId() >= 910000007 && getTargetMapId() <= 910000012) {
+            c.getSession().write(MaplePacketCreator.enableActions());
+            player.getClient().getSession().write(MaplePacketCreator.serverNotice(5, "[公告]请通过npc进入pk房间！"));
+            } else {
+            c.getPlayer().changeMap(to, pto);
+            } //late resolving makes this harder but prevents us from loading the whole world at once
             changed = true;
         }
         if (!changed) {

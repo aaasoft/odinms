@@ -23,7 +23,7 @@ public class CancelBuffHandler extends AbstractMaplePacketHandler implements Map
                 c.getPlayer().getMap().broadcastMessage(c.getPlayer(), MaplePacketCreator.skillCancel(c.getPlayer(), sourceid), false);
                 break;
         }
-        MapleStatEffect effect = SkillFactory.getSkill(sourceid).getEffect(1);
+        MapleStatEffect effect = SkillFactory.getSkill(sourceid).getEffect(1); // hack but we don't know the level that was casted on us
         c.getPlayer().cancelEffect(effect, false, -1);
     }
 }

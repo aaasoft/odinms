@@ -33,7 +33,9 @@ public class ItemPickupHandler extends AbstractMaplePacketHandler {
         if (c.getPlayer().getMapId() >= 209000001 && c.getPlayer().getMapId() <= 209000015) {
             MapleMapItem mapitem = (MapleMapItem) ob;
             if (mapitem.getDropper() == c.getPlayer()) {
-                if (MapleInventoryManipulator.addFromDrop(c, mapitem.getItem(), "", false)) {
+                StringBuilder logInfo = new StringBuilder("Picked up by ");
+                logInfo.append(c.getPlayer().getName());
+                if (MapleInventoryManipulator.addFromDrop(c, mapitem.getItem(), logInfo.toString(), false)) {
                     c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 2, c.getPlayer().getId()), mapitem.getPosition());
                     c.getPlayer().getCheatTracker().pickupComplete();
                     c.getPlayer().getMap().removeMapObject(ob);
@@ -68,6 +70,9 @@ public class ItemPickupHandler extends AbstractMaplePacketHandler {
                     AutobanManager.getInstance().addPoints(c, 100, 300000, "Itemvac");
                     c.getPlayer().getCheatTracker().registerOffense(CheatingOffense.ITEMVAC);
                 }
+                //else if (distance > 30000.0) {
+                //c.getPlayer().getCheatTracker().registerOffense(CheatingOffense.SHORT_ITEMVAC);
+                //}
                 if (mapitem.getMeso() > 0) {
                     if (c.getPlayer().getParty() != null) {
                         ChannelServer cserv = c.getChannelServer();
@@ -90,22 +95,28 @@ public class ItemPickupHandler extends AbstractMaplePacketHandler {
                     } else {
                         c.getPlayer().gainMeso(mapitem.getMeso(), true, true);
                     }
-                    c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 2, c.getPlayer().getId()), mapitem.getPosition());
+                    c.getPlayer().getMap().broadcastMessage(
+                            MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 2, c.getPlayer().getId()),
+                            mapitem.getPosition());
                     c.getPlayer().getCheatTracker().pickupComplete();
                     c.getPlayer().getMap().removeMapObject(ob);
                 } else {
+                    StringBuilder logInfo = new StringBuilder("Picked up by ");
+                    logInfo.append(c.getPlayer().getName());
                     if (mapitem.getItem().getItemId() >= 5000000 && mapitem.getItem().getItemId() <= 5000100) {
                         int petId = MaplePet.createPet(mapitem.getItem().getItemId());
                         if (petId == -1) {
                             return;
                         }
-                        MapleInventoryManipulator.addById(c, mapitem.getItem().getItemId(), mapitem.getItem().getQuantity(), "", null, petId);
+                        MapleInventoryManipulator.addById(c, mapitem.getItem().getItemId(), mapitem.getItem().getQuantity(), "Cash Item was purchased.", null, petId);
                         c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 2, c.getPlayer().getId()), mapitem.getPosition());
                         c.getPlayer().getCheatTracker().pickupComplete();
                         c.getPlayer().getMap().removeMapObject(ob);
                     } else {
-                        if (MapleInventoryManipulator.addFromDrop(c, mapitem.getItem(), "", true)) {
-                            c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 2, c.getPlayer().getId()), mapitem.getPosition());
+                        if (MapleInventoryManipulator.addFromDrop(c, mapitem.getItem(), logInfo.toString(), true)) {
+                            c.getPlayer().getMap().broadcastMessage(
+                                    MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 2, c.getPlayer().getId()),
+                                    mapitem.getPosition());
                             c.getPlayer().getCheatTracker().pickupComplete();
                             c.getPlayer().getMap().removeMapObject(ob);
                         } else {

@@ -76,7 +76,7 @@ public enum MapleJob {
 				return BOWMAN;
 			case 16:
 				return THIEF;
-			case 32:
+			case 32: // ??
 				return PIRATE;
 			default:
 				return BEGINNER;

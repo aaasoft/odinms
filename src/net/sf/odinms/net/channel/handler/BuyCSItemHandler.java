@@ -33,9 +33,10 @@ public class BuyCSItemHandler extends AbstractMaplePacketHandler {
         CashItemInfo item = CashItemFactory.getItem(snCS);
         if (!c.getPlayer().inCS() || c.getPlayer().getCSPoints(way) < 0 || c.getPlayer().getCSPoints(way) < item.getPrice()) {
             c.getPlayer().ban("Trying to packet edit.");
+            
         }
         if (item.getId() >= 5000000 && item.getId() <= 5000100) {
-            MapleInventoryManipulator.addById(c, item.getId(), (short) item.getCount(), "Cash Item was purchased.", null, MaplePet.createPet(item.getId()));
+            MapleInventoryManipulator.addById(c, item.getId(), (short) item.getCount(), "Cash Item was purchased.", null, MaplePet.createPet(item.getId())); 
         } else {
             MapleInventoryManipulator.addById(c, item.getId(), (short) item.getCount(), "Cash Item was purchased.");
         }

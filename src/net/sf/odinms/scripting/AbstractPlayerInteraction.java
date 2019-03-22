@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Random;
+
 import net.sf.odinms.client.Equip;
 import net.sf.odinms.client.IItem;
 import net.sf.odinms.client.InventoryException;
@@ -114,25 +115,24 @@ public class AbstractPlayerInteraction {
     }
 
     public void gainItem(int id, short quantity, boolean randomStats) {
-        if (id >= 5000000 && id <= 5000100) {
-            MapleInventoryManipulator.addById(c, id, (short) 1, null, null, MaplePet.createPet(id));
-        }
         if (quantity >= 0) {
             MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
             IItem item = ii.getEquipById(id);
             MapleInventoryType type = ii.getInventoryType(id);
+            StringBuilder logInfo = new StringBuilder(c.getPlayer().getName());
+            logInfo.append(" received "+quantity+" from a scripted PlayerInteraction ("+this.toString()+")");
             if (!MapleInventoryManipulator.checkSpace(c, id, quantity, "")) {
                 c.getSession().write(MaplePacketCreator.serverNotice(1, "Your inventory is full. Please remove an item from your " + type.name() + " inventory."));
                 return;
             }
             if (type.equals(MapleInventoryType.EQUIP) && !ii.isThrowingStar(item.getItemId()) && !ii.isBullet(item.getItemId())) {
                 if (randomStats) {
-                    MapleInventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip) item), "", false);
+                    MapleInventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip) item), logInfo.toString(), false);
                 } else {
-                    MapleInventoryManipulator.addFromDrop(c, (Equip) item, "", false);
+                    MapleInventoryManipulator.addFromDrop(c, (Equip) item, logInfo.toString(), false);
                 }
             } else {
-                MapleInventoryManipulator.addById(c, id, quantity, "");
+                MapleInventoryManipulator.addById(c, id, quantity, logInfo.toString());
             }
         } else {
             MapleInventoryManipulator.removeById(c, MapleItemInformationProvider.getInstance().getInventoryType(id), id, -quantity, true, false);

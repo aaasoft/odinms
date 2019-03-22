@@ -1,23 +1,39 @@
 package net.sf.odinms.net.channel.handler;
 
 import java.rmi.RemoteException;
-
+import net.sf.odinms.client.MapleBuffStat;
 import net.sf.odinms.client.MapleClient;
 import net.sf.odinms.net.AbstractMaplePacketHandler;
 import net.sf.odinms.net.channel.ChannelServer;
 import net.sf.odinms.net.world.remote.WorldChannelInterface;
 import net.sf.odinms.tools.MaplePacketCreator;
 import net.sf.odinms.tools.data.input.SeekableLittleEndianAccessor;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
 *
 * @author Acrylic
 */
 
 public class EnterCashShopHandler extends AbstractMaplePacketHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(ChangeChannelHandler.class);
+
 	@Override
+
 	public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
 		if (c.getChannelServer().allowCashshop()) {
+            		if (c.getPlayer().getBuffedValue(MapleBuffStat.SUMMON) != null) {
+			c.getPlayer().cancelEffectFromBuffStat(MapleBuffStat.PUPPET);
+		}
+		try {
+			WorldChannelInterface wci = ChannelServer.getInstance(c.getChannel()).getWorldInterface();
+			wci.addBuffsToStorage(c.getPlayer().getId(), c.getPlayer().getAllBuffs());
+			wci.addCooldownsToStorage(c.getPlayer().getId(), c.getPlayer().getAllCooldowns());
+		} catch (RemoteException e) {
+			log.info("RemoteException: {}", e);
+			c.getChannelServer().reconnectWorld();
+		}
 			if (c.getPlayer().getNoPets() > 0) {
 				c.getPlayer().unequipAllPets();
 			}

@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.Invocable;
@@ -12,14 +13,17 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+
 import net.sf.odinms.client.MapleClient;
 import net.sf.odinms.server.MaplePortal;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PortalScriptManager {
 	private static final Logger log = LoggerFactory.getLogger(PortalScriptManager.class);
 	private static PortalScriptManager instance = new PortalScriptManager();
+
 	private Map<String, PortalScript> scripts = new HashMap<String, PortalScript>();
 	private ScriptEngineFactory sef;
 
@@ -36,11 +40,13 @@ public class PortalScriptManager {
 		if (scripts.containsKey(scriptName)) {
 			return scripts.get(scriptName);
 		}
+
 		File scriptFile = new File("scripts/portal/" + scriptName + ".js");
 		if (!scriptFile.exists()) {
 			scripts.put(scriptName, null);
 			return null;
 		}
+
 		FileReader fr = null;
 		ScriptEngine portal = sef.getScriptEngine();
 		try {
@@ -60,12 +66,14 @@ public class PortalScriptManager {
 				}
 			}
 		}
+		
 		PortalScript script = ((Invocable) portal).getInterface(PortalScript.class);
 		scripts.put(scriptName, script);
 		return script;
 	}
-
-    public boolean executePortalScript(MaplePortal portal, MapleClient c) {
+	
+	// rhino is thread safe so this should be fine without synchronisation
+	public boolean executePortalScript(MaplePortal portal, MapleClient c) {
 		PortalScript script = getPortalScript(portal.getScriptName());
 
 		if (script != null) {

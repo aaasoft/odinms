@@ -17,9 +17,11 @@ public class PetFoodHandler extends AbstractMaplePacketHandler {
 	public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
 		if (c.getPlayer().getNoPets() == 0) {
 			return;
-        }
+		}
+		
 		int previousFullness = 100;
 		int slot = 0;
+		
 		MaplePet[] pets = c.getPlayer().getPets();
 		for (int i = 0; i < 3; i++) {
 			if (pets[i] != null) {
@@ -29,11 +31,15 @@ public class PetFoodHandler extends AbstractMaplePacketHandler {
 				}
 			}
 		}
+		
 		MaplePet pet = c.getPlayer().getPet(slot);
+		
 		slea.readInt();
 		slea.readShort();
 		int itemId = slea.readInt();
+
 		boolean gainCloseness = false;
+		
 		Random rand = new Random();
 		int random = rand.nextInt(101);
 		if (random <= 50) {

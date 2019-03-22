@@ -61,21 +61,49 @@ public class CreateCharHandler extends AbstractMaplePacketHandler {
         MapleInventory etc = newchar.getInventory(MapleInventoryType.ETC);
         etc.addItem(new Item(4161001, (byte) 0, (short) 1));
         boolean charok = true;
-        if (str + dex + _int + luk != 25 || str < 4 || dex < 4 || _int < 4 || luk < 4) {
+        int totstats = str + dex + _int + luk;
+        if (totstats != 25 || str < 4 || dex < 4 || _int < 4 || luk < 4) {
             charok = false;
         }
         if (gender == 0) {
-            if ((bottom != 1060006 && bottom != 1060002)||(top != 1040002 && top != 1040006 && top != 1040010) || (face != 20000 && face != 20001 && face != 20002)||(hair != 30000 && hair != 30020 && hair != 30030)) {
+            if (face != 20000 && face != 20001 && face != 20002) {
+                charok = false;
+            }
+            if (hair != 30000 && hair != 30020 && hair != 30030) {
+                charok = false;
+            }
+            if (top != 1040002 && top != 1040006 && top != 1040010) {
+                charok = false;
+            }
+            if (bottom != 1060006 && bottom != 1060002) {
                 charok = false;
             }
         } else if (gender == 1) {
-            if ((bottom != 1061002 && bottom != 1061008)||(face != 21000 && face != 21001 && face != 21002)||(hair != 31000 && hair != 31040 && hair != 31050)||(top != 1041002 && top != 1041006 && top != 1041010 && top != 1041011)) {
+            if (face != 21000 && face != 21001 && face != 21002) {
+                charok = false;
+            }
+            if (hair != 31000 && hair != 31040 && hair != 31050) {
+                charok = false;
+            }
+            if (top != 1041002 && top != 1041006 && top != 1041010 && top != 1041011) {
+                charok = false;
+            }
+            if (bottom != 1061002 && bottom != 1061008) {
                 charok = false;
             }
         } else {
             charok = false;
         }
-        if ((hairColor != 0 && hairColor != 2 && hairColor != 3 && hairColor != 7)||(shoes != 1072001 && shoes != 1072005 && shoes != 1072037 && shoes != 1072038)||(weapon != 1302000 && weapon != 1322005 && weapon != 1312004)|| (skinColor < 0 || skinColor > 3)) {
+        if (skinColor < 0 || skinColor > 3) {
+            charok = false;
+        }
+        if (weapon != 1302000 && weapon != 1322005 && weapon != 1312004) {
+            charok = false;
+        }
+        if (shoes != 1072001 && shoes != 1072005 && shoes != 1072037 && shoes != 1072038) {
+            charok = false;
+        }
+        if (hairColor != 0 && hairColor != 2 && hairColor != 3 && hairColor != 7) {
             charok = false;
         }
         if (charok && MapleCharacterUtil.canCreateChar(name, c.getWorld())) {

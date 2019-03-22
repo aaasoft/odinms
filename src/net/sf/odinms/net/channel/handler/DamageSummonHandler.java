@@ -12,11 +12,13 @@ import java.util.Iterator;
 public class DamageSummonHandler extends AbstractMaplePacketHandler implements MaplePacketHandler {
 
     public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
+
         slea.readInt(); //Bugged? might not be skillid.
         int unkByte = slea.readByte();
         int damage = slea.readInt();
         int monsterIdFrom = slea.readInt();
         slea.readByte(); // stance
+
         Iterator<MapleSummon> iter = c.getPlayer().getSummons().values().iterator();
         while (iter.hasNext()) {
             MapleSummon summon = iter.next();

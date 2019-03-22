@@ -32,8 +32,10 @@ public class FourthJobQuestsPortalHandler {
 	}
 
 	private FourthJobQuestsPortalHandler() {
+
 	}
 
+	//c.getClient().getSession().write(MaplePacketCreator.enableActions());
 	public static boolean handlePortal(String name, MapleCharacter c) {
 		ServernoticeMapleClientMessageCallback snmcmc = new ServernoticeMapleClientMessageCallback(5,c.getClient());
 		if (name.equals(FourthJobQuests.RUSH.getValue())) {

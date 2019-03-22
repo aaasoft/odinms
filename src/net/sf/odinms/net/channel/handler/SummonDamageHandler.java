@@ -3,6 +3,7 @@ package net.sf.odinms.net.channel.handler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import net.sf.odinms.client.ISkill;
 import net.sf.odinms.client.MapleCharacter;
 import net.sf.odinms.client.MapleClient;
@@ -75,6 +76,7 @@ public class SummonDamageHandler extends AbstractMaplePacketHandler {
         for (SummonAttackEntry attackEntry : allDamage) {
             int damage = attackEntry.getDamage();
             MapleMonster target = player.getMap().getMonsterByOid(attackEntry.getMonsterOid());
+
             if (target != null) {
                 if (damage > 0 && summonEffect.getMonsterStati().size() > 0) {
                     if (summonEffect.makeChanceResult()) {
@@ -82,6 +84,7 @@ public class SummonDamageHandler extends AbstractMaplePacketHandler {
                         target.applyStatus(player, monsterStatusEffect, summonEffect.isPoison(), 4000);
                     }
                 }
+
                 player.getMap().damageMonster(player, target, damage);
             }
         }

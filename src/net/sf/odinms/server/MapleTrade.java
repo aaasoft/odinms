@@ -33,15 +33,15 @@ public class MapleTrade {
     private int getFee(int meso) {
         int fee = 0;
         if (meso >= 10000000) {
-            fee = (int) Math.round(meso / 25);
+            fee = (int) Math.round(0.04 * meso);
         } else if (meso >= 5000000) {
             fee = (int) Math.round(0.03 * meso);
         } else if (meso >= 1000000) {
-            fee = (int) Math.round(meso / 50);
+            fee = (int) Math.round(0.02 * meso);
         } else if (meso >= 100000) {
-            fee = (int) Math.round(meso / 100);
+            fee = (int) Math.round(0.01 * meso);
         } else if (meso >= 50000) {
-            fee = (int) Math.round(meso / 200);
+            fee = (int) Math.round(0.005 * meso);
         }
         return fee;
     }
@@ -59,8 +59,13 @@ public class MapleTrade {
     public void complete2() {
         items.clear();
         meso = 0;
+        StringBuilder logInfo = new StringBuilder("Completed trade with ");
+        logInfo.append(partner.getChr().getName());
+        logInfo.append(". ");
+        logInfo.append(chr.getName());
+        logInfo.append(" received the item.");
         for (IItem item : exchangeItems) {
-            MapleInventoryManipulator.addFromDrop(chr.getClient(), item, "");
+            MapleInventoryManipulator.addFromDrop(chr.getClient(), item, logInfo.toString());
         }
         if (exchangeMeso > 0) {
             chr.gainMeso(exchangeMeso - getFee(exchangeMeso), true, true, true);
@@ -73,8 +78,14 @@ public class MapleTrade {
     }
 
     public void cancel() {
+        StringBuilder logInfo = new StringBuilder("Canceled trade ");
+        if (partner != null) {
+            logInfo.append("with ");
+            logInfo.append(partner.getChr().getName());
+        }
+        logInfo.append(". " + chr.getName() + " received the item.");
         for (IItem item : items) {
-            MapleInventoryManipulator.addFromDrop(chr.getClient(), item, "");
+            MapleInventoryManipulator.addFromDrop(chr.getClient(), item, logInfo.toString());
         }
         if (meso > 0) {
             chr.gainMeso(meso, true, true, true);

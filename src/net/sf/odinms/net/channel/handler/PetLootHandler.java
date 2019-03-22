@@ -24,6 +24,7 @@ public class PetLootHandler extends AbstractMaplePacketHandler {
 	@Override
 	public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
 		MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
+
 		if (c.getPlayer().getNoPets() == 0) {
 			return;
 		}
@@ -44,13 +45,13 @@ public class PetLootHandler extends AbstractMaplePacketHandler {
 				}
 				double distance = pet.getPos().distanceSq(mapitem.getPosition());
 				c.getPlayer().getCheatTracker().checkPickupAgain();
-				if (distance > 90000.0) {
+				if (distance > 90000.0) { // 300^2, 550 is approximatly the range of ultis
 					c.getPlayer().getCheatTracker().registerOffense(CheatingOffense.ITEMVAC);
 				} else if (distance > 22500.0) {
 					c.getPlayer().getCheatTracker().registerOffense(CheatingOffense.SHORT_ITEMVAC);
 				}
 				if (mapitem.getMeso() > 0) {
-					if(c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).findById(1812000) != null) { //Something weird about this item
+					if(c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).findById(1812000) != null) { //Evil hax until I find the right packet - Ramon
 						c.getPlayer().gainMeso(mapitem.getMeso(), true, true);
 						c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 5, c.getPlayer().getId(), true, c.getPlayer().getPetIndex(pet)), mapitem.getPosition());
 						c.getPlayer().getCheatTracker().pickupComplete();
@@ -62,6 +63,8 @@ public class PetLootHandler extends AbstractMaplePacketHandler {
 						return;
 					}
 				} else {
+					StringBuilder logInfo = new StringBuilder("Picked up by ");
+					logInfo.append(c.getPlayer().getName());
 					if (ii.isPet(mapitem.getItem().getItemId())) {
 						if (MapleInventoryManipulator.addById(c, mapitem.getItem().getItemId(), mapitem.getItem().getQuantity(), "Cash Item was purchased.", null)) {
 							c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 5, c.getPlayer().getId(), true, c.getPlayer().getPetIndex(pet)), mapitem.getPosition());
@@ -72,7 +75,7 @@ public class PetLootHandler extends AbstractMaplePacketHandler {
 							return;
 						}
 					} else {
-						if (MapleInventoryManipulator.addFromDrop(c, mapitem.getItem(), "", true)) {
+						if (MapleInventoryManipulator.addFromDrop(c, mapitem.getItem(), logInfo.toString(), true)) {
 							c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeItemFromMap(mapitem.getObjectId(), 5, c.getPlayer().getId(), true, c.getPlayer().getPetIndex(pet)), mapitem.getPosition());
 							c.getPlayer().getCheatTracker().pickupComplete();
 							c.getPlayer().getMap().removeMapObject(ob);

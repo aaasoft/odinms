@@ -12,7 +12,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.script.ScriptException;
+
 import net.sf.odinms.client.MapleCharacter;
 import net.sf.odinms.database.DatabaseConnection;
 import net.sf.odinms.net.channel.ChannelServer;
@@ -234,11 +236,14 @@ public class EventInstanceManager {
     public MapleMap getMapInstance(int mapId) {
         boolean wasLoaded = mapFactory.isMapLoaded(mapId);
         MapleMap map = mapFactory.getMap(mapId);
+
+        // in case reactors need shuffling and we are actually loading the map
         if (!wasLoaded) {
             if (em.getProperty("shuffleReactors") != null && em.getProperty("shuffleReactors").equals("true")) {
                 map.shuffleReactors();
             }
         }
+
         return map;
     }
 

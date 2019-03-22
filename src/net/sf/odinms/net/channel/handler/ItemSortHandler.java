@@ -14,9 +14,11 @@ public class ItemSortHandler extends AbstractMaplePacketHandler {
 
 	slea.readInt(); 
 	byte mode = slea.readByte();
+
 	boolean sorted = false;
 	MapleInventoryType pInvType = MapleInventoryType.getByType(mode);
 	MapleInventory pInv = c.getPlayer().getInventory(pInvType); 
+	
 	while(!sorted) {
 		byte freeSlot = pInv.getNextFreeSlot();
 		if (freeSlot != -1) {

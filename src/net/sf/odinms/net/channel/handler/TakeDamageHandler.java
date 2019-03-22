@@ -42,12 +42,14 @@ public class TakeDamageHandler extends AbstractMaplePacketHandler {
         boolean is_pg = true;
         int mpattack = 0;
         MapleMonster attacker = null;
+
         if (damagefrom != -2) {
             monsteridfrom = slea.readInt();
             oid = slea.readInt();
             attacker = (MapleMonster) player.getMap().getMapObject(oid);
             direction = slea.readByte();
         }
+
         if (damagefrom != -1 && damagefrom != -2 && attacker != null) {
             MobAttackInfo attackInfo = MobAttackInfoFactory.getMobAttackInfo(attacker, damagefrom);
             if (attackInfo.isDeadlyAttack()) {
@@ -79,15 +81,18 @@ public class TakeDamageHandler extends AbstractMaplePacketHandler {
                 }
             }
         }
+        
         if (damage == -1) {
             int job = (int) (player.getJob().getId() / 10 - 40);
             fake = 4020002 + (job * 100000);
         }
+
         if (damage < -1 || damage > 60000) {
             AutobanManager.getInstance().addPoints(c, 1000, 60000, "Taking abnormal amounts of damage from " + monsteridfrom + ": " + damage);
             return;
         }
         player.getCheatTracker().checkTakeDamage();
+
         if (damage > 0) {
             player.getCheatTracker().setAttacksWithoutHit(0);
             player.getCheatTracker().resetHPRegen();
@@ -163,8 +168,24 @@ public class TakeDamageHandler extends AbstractMaplePacketHandler {
             }
         }
         if (!player.isHidden() && !smokescreen) {
-            player.getMap().broadcastMessage(player, MaplePacketCreator.damagePlayer(damagefrom, monsteridfrom, player.getId(), damage, fake, direction, is_pgmr, pgmr, is_pg, oid, pos_x, pos_y), false);
-            player.checkBerserk();
+            if (monsteridfrom == 9300166) {
+                player.setBombPoints(player.getBombPoints() - 1);
+                if (player.getBombPoints() < 1) {
+                    player.setHp(0);
+                    player.updateSingleStat(MapleStat.HP, 0);
+                    player.setBombPoints(5);
+                    MaplePacket packet = MaplePacketCreator.serverNotice(0, "[Update] Player " + player.getName() + " is dead");
+                    c.getPlayer().getMap().broadcastMessage(packet);
+                    return;
+                } else {
+                    MaplePacket packet = MaplePacketCreator.serverNotice(0, "[Update] Player " + player.getName() + " now has " + player.getBombPoints() + " points");
+                    c.getPlayer().getMap().broadcastMessage(packet);
+                    return;
+                }
+            } else {
+                player.getMap().broadcastMessage(player, MaplePacketCreator.damagePlayer(damagefrom, monsteridfrom, player.getId(), damage, fake, direction, is_pgmr, pgmr, is_pg, oid, pos_x, pos_y), false);
+                player.checkBerserk();
+            }
         }
     }
 }

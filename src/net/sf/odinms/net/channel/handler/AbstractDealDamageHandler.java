@@ -29,6 +29,14 @@ import net.sf.odinms.tools.data.input.LittleEndianAccessor;
 
 public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandler {
 
+    private int PVP_MAP = 800020400;
+   	private int PVP_MAP1 = 910000007;
+        private int PVP_MAP2 = 910000008;
+        private int PVP_MAP3 = 910000009;
+        private int PVP_MAP4 = 910000010;
+        private int PVP_MAP5 = 910000011;
+        private int PVP_MAP6 = 910000012;
+        private int PVP_MAP8 = 910000018;
     public static class AttackInfo {
 
         public int numAttacked,  numDamage,  numAttackedAndDamage;
@@ -55,8 +63,10 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
     }
 
     protected synchronized void applyAttack(AttackInfo attack, MapleCharacter player, int maxDamagePerMonster, int attackCount) {
+
         player.getCheatTracker().resetHPRegen();
         player.getCheatTracker().checkAttack(attack.skill);
+
         ISkill theSkill = null;
         MapleStatEffect attackEffect = null;
         if (attack.skill != 0) {
@@ -78,13 +88,33 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
             player.getCheatTracker().registerOffense(CheatingOffense.ATTACKING_WHILE_DEAD);
             return;
         }
+
         if (attackCount != attack.numDamage && attack.skill != 4211006) {
             player.getCheatTracker().registerOffense(CheatingOffense.MISMATCHING_BULLETCOUNT, attack.numDamage + "/" + attackCount);
             return;
         }
         int totDamage = 0;
         final MapleMap map = player.getMap();
-        if (player.isPvPMap()) {
+
+        if (player.getMapId() == 910000018) {
+            MaplePvp.doPvP(player, map, attack);
+        }
+   if (player.getMapId() == 910000007) {
+            MaplePvp.doPvP(player, map, attack);
+        }
+           if (player.getMapId() == 910000008) {
+            MaplePvp.doPvP(player, map, attack);
+        }
+           if (player.getMapId() == 910000009) {
+            MaplePvp.doPvP(player, map, attack);
+        }
+           if (player.getMapId() == 910000010) {
+            MaplePvp.doPvP(player, map, attack);
+        }
+           if (player.getMapId() == 910000011) {
+            MaplePvp.doPvP(player, map, attack);
+        }
+           if (player.getMapId() == 910000012) {
             MaplePvp.doPvP(player, map, attack);
         }
         if (attack.skill == 4211006) {
@@ -118,8 +148,10 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
                 }
             }
         }
+
         for (Pair<Integer, List<Integer>> oned : attack.allDamage) {
             MapleMonster monster = map.getMonsterByOid(oned.getLeft().intValue());
+
             if (monster != null) {
                 int totDamageToOneMonster = 0;
                 for (Integer eachd : oned.getRight()) {
@@ -127,6 +159,7 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
                 }
                 totDamage += totDamageToOneMonster;
                 player.checkMonsterAggro(monster);
+
                 Point playerPos = player.getPosition();
                 if (totDamageToOneMonster > attack.numDamage + 1) {
                     int dmgCheck = player.getCheatTracker().checkDamage(totDamageToOneMonster);
@@ -134,6 +167,10 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
                         player.getCheatTracker().registerOffense(CheatingOffense.SAME_DAMAGE, dmgCheck + " times: " + totDamageToOneMonster);
                     }
                 }
+                if (attack.skill == 3221007) { // snipe 
+    // Snipe damage should be 95000~99999
+    totDamageToOneMonster = 95000 + (int) Math.random() * 4999; 
+}
                 checkHighDamage(player, monster, attack, theSkill, attackEffect, totDamageToOneMonster, maxDamagePerMonster);
                 double distance = playerPos.distanceSq(monster.getPosition());
                 if (distance > 400000.0) {
@@ -147,18 +184,38 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
                 if ((attack.skill == 0 || attack.skill == 4001334 || attack.skill == 4201005 || attack.skill == 4211002 || attack.skill == 4211004 || attack.skill == 4221001 || attack.skill == 4221003 || attack.skill == 4221007) && player.getBuffedValue(MapleBuffStat.PICKPOCKET) != null) {
                     handlePickPocket(player, monster, oned);
                 }
+//                if (attack.skill == 5201004) {
+//                    ISkill blankshot = SkillFactory.getSkill(5201004);
+//                    if (blankshot.getEffect(player.getSkillLevel(blankshot)).makeChanceResult()) {
+//                        MapleStatEffect blankshotEffect = blankshot.getEffect(player.getSkillLevel(blankshot));
+//                        MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.STUN, 1), blankshot, false);
+//                        monster.applyStatus(player, monsterStatusEffect, false, blankshotEffect.getDuration());
+//                    }
+//                }
                 if (attack.skill == 4101005) { // drain
                     ISkill drain = SkillFactory.getSkill(4101005);
                     int gainhp = (int) ((double) totDamageToOneMonster * (double) drain.getEffect(player.getSkillLevel(drain)).getX() / 100.0);
                     gainhp = Math.min(monster.getMaxHp(), Math.min(gainhp, player.getMaxHp() / 2));
                     player.addHP(gainhp);
                 }
-                if (attack.skill == 5111004) { // energy drain
-                    ISkill drain = SkillFactory.getSkill(5111004);
-                    int gainhp = (int) ((double) totDamageToOneMonster * (double) drain.getEffect(player.getSkillLevel(drain)).getX() / 100.0);
-                    gainhp = Math.min(monster.getMaxHp(), Math.min(gainhp, player.getMaxHp() / 2));
-                    player.addHP(gainhp);
-                }
+                                 if (attack.skill == 5111004) { // Energy Drain
+                                     ISkill edrain = SkillFactory.getSkill(5111004);
+                                                       int gainhp = (int) ((double) totDamage *
+                                                        (double) edrain.getEffect(player.getSkillLevel
+(edrain)).getX() / 100.0);
+                                                     gainhp = Math.min(monster.getMaxHp(), Math.min(gainhp,
+player.getMaxHp() / 2));
+                                                    player.addHP(gainhp);
+                                                }
+//                if (attack.skill == 2121006) {
+//                    ISkill paralyze = SkillFactory.getSkill(2121006);
+//                    if (paralyze.getEffect(player.getSkillLevel(paralyze)).makeChanceResult()) {
+//                        if (totDamageToOneMonster > 0 && monster.isAlive()) {
+//                            MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.FREEZE, 1), paralyze, false);
+//                            monster.applyStatus(player, monsterStatusEffect, false, paralyze.getEffect(player.getSkillLevel(paralyze)).getDuration());
+//                        }
+//                    }
+//                }
                 if (player.getBuffedValue(MapleBuffStat.HAMSTRING) != null) {
                     ISkill hamstring = SkillFactory.getSkill(3121007);
                     if (hamstring.getEffect(player.getSkillLevel(hamstring)).makeChanceResult()) {
@@ -166,6 +223,7 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
                         monster.applyStatus(player, monsterStatusEffect, false, hamstring.getEffect(player.getSkillLevel(hamstring)).getY() * 1000);
                     }
                 }
+
                 if (player.getBuffedValue(MapleBuffStat.BLIND) != null) {
                     ISkill blind = SkillFactory.getSkill(3221006);
                     if (blind.getEffect(player.getSkillLevel(blind)).makeChanceResult()) {
@@ -173,10 +231,12 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
                         monster.applyStatus(player, monsterStatusEffect, false, blind.getEffect(player.getSkillLevel(blind)).getY() * 1000);
                     }
                 }
+
                 if (player.getJob().isA(MapleJob.WHITEKNIGHT)) {
                     int[] charges = new int[]{1211005, 1211006};
                     for (int charge : charges) {
                         ISkill chargeSkill = SkillFactory.getSkill(charge);
+
                         if (player.isBuffFrom(MapleBuffStat.WK_CHARGE, chargeSkill)) {
                             final ElementalEffectiveness iceEffectiveness = monster.getEffectiveness(Element.ICE);
                             if (totDamageToOneMonster > 0 && iceEffectiveness == ElementalEffectiveness.NORMAL || iceEffectiveness == ElementalEffectiveness.WEAK) {
@@ -234,7 +294,7 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
             player.getCheatTracker().setAttacksWithoutHit(player.getCheatTracker().getAttacksWithoutHit() + 1);
             final int offenseLimit;
             switch (attack.skill) {
-                case 3121004: // Hurricane
+                case 3121004: // Hurricane / Storm of Arrow
                 case 5221004: // Rapidfire
                     offenseLimit = 300;
                     break;
@@ -254,6 +314,7 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
         int maxmeso = player.getBuffedValue(MapleBuffStat.PICKPOCKET).intValue();
         int reqdamage = 20000;
         Point monsterPosition = monster.getPosition();
+
         for (Integer eachd : oned.getRight()) {
             if (pickpocket.getEffect(player.getSkillLevel(pickpocket)).makeChanceResult()) {
                 double perc = (double) eachd / (double) reqdamage;
@@ -264,6 +325,7 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
                 final Point tdpos = new Point((int) (monsterPosition.getX() + (Math.random() * 100) - 50), (int) (monsterPosition.getY()));
                 final MapleMonster tdmob = monster;
                 final MapleCharacter tdchar = player;
+
                 TimerManager.getInstance().schedule(new Runnable() {
 
                     public void run() {
@@ -367,6 +429,7 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
         }
         lea.readByte(); // always 0 (?)
         ret.stance = lea.readByte();
+
         if (ret.skill == 4211006) {
             return parseMesoExplosion(lea, ret);
         }
@@ -400,12 +463,14 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
             }
             ret.allDamage.add(new Pair<Integer, List<Integer>>(Integer.valueOf(oid), allDamageNumbers));
         }
+        // System.out.println("Unk3: " + HexTool.toString(lea.read(4)));
         return ret;
     }
 
     public AttackInfo parseMesoExplosion(LittleEndianAccessor lea, AttackInfo ret) {
         if (ret.numAttackedAndDamage == 0) {
             lea.skip(10);
+
             int bullets = lea.readByte();
             for (int j = 0; j < bullets; j++) {
                 int mesoid = lea.readInt();
@@ -424,6 +489,7 @@ public abstract class AbstractDealDamageHandler extends AbstractMaplePacketHandl
                 List<Integer> allDamageNumbers = new ArrayList<Integer>();
                 for (int j = 0; j < bullets; j++) {
                     int damage = lea.readInt();
+                    // System.out.println("Damage: " + damage);
                     allDamageNumbers.add(Integer.valueOf(damage));
                 }
                 ret.allDamage.add(new Pair<Integer, List<Integer>>(Integer.valueOf(oid), allDamageNumbers));

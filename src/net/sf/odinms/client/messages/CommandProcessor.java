@@ -1,29 +1,37 @@
+/*
+Jiongorz. Src. Command.java
+JiongorzBBs : http://bbs.jiongorz.com
+AdminQQ:307586193
+Command
+*/
 package net.sf.odinms.client.messages;
 
 import java.lang.management.ManagementFactory;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import net.sf.odinms.client.MapleCharacter;
-import net.sf.odinms.client.MapleClient;
+import java.rmi.RemoteException;
+import java.sql.*;
+import java.util.*;
+import java.util.logging.Level;
+import javax.management.*;
+import net.sf.odinms.client.*;
 import net.sf.odinms.database.DatabaseConnection;
 import net.sf.odinms.net.channel.ChannelServer;
 import net.sf.odinms.net.channel.handler.GeneralchatHandler;
+import net.sf.odinms.scripting.npc.NPCScriptManager;
+import net.sf.odinms.server.MapleShopFactory;
 import net.sf.odinms.server.TimerManager;
+import net.sf.odinms.server.life.MapleLifeFactory;
+import org.slf4j.*;
 import net.sf.odinms.server.maps.MapleMap;
-import net.sf.odinms.tools.MockIOSession;
-import net.sf.odinms.tools.Pair;
+import net.sf.odinms.tools.*;
 
 public class CommandProcessor implements CommandProcessorMBean {
 
     private static CommandProcessor instance = new CommandProcessor();
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GeneralchatHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(GeneralchatHandler.class);
     private static List<Pair<MapleCharacter, String>> gmlog = new LinkedList<Pair<MapleCharacter, String>>();
     private static Runnable persister;
+    private static String type;
+    private static int monsterId,  quantity,  gmlvl;
 
 
     static {
@@ -53,6 +61,7 @@ public class CommandProcessor implements CommandProcessorMBean {
                     }
                     ps.close();
                 } catch (SQLException e) {
+                    log.error("错误咯", e);
                 }
                 gmlog.clear();
             }
@@ -64,7 +73,7 @@ public class CommandProcessor implements CommandProcessorMBean {
         try {
             mBeanServer.registerMBean(instance, new ObjectName("net.sf.odinms.client.messages:name=CommandProcessor"));
         } catch (Exception e) {
-            log.error("Error registering CommandProcessor MBean");
+            log.error("错误");
         }
     }
 
@@ -75,12 +84,12 @@ public class CommandProcessor implements CommandProcessorMBean {
     public String processCommandJMX(int cserver, int mapid, String command) {
         ChannelServer cserv = ChannelServer.getInstance(cserver);
         if (cserv == null) {
-            return "The specified channel Server does not exist in this serverprocess";
+            return "好囧啊 一大堆乱七八糟的";
         }
         MapleClient c = new MapleClient(null, null, new MockIOSession());
         MapleCharacter chr = MapleCharacter.getDefault(c, 26023);
         c.setPlayer(chr);
-        chr.setName("/---------jmxuser-------------\\");
+        chr.setName("/---------分割线-------------\\");
         MapleMap map = cserv.getMapFactory().getMap(mapid);
         if (map != null) {
             chr.setMap(map);
@@ -100,16 +109,22 @@ public class CommandProcessor implements CommandProcessorMBean {
     }
 
     private static boolean processCommandInternal(MapleClient c, MessageCallback mc, String line) {
-        int gm = c.getPlayer().gmLevel();
+        MapleCharacter p = c.getPlayer();
+        int vip = p.vip;
+        int gm = p.gmLevel();
         if (line.charAt(0) == '!' && gm > 0) {
-            if (c.getPlayer().isLogged() && gm > 1) {
-                synchronized (gmlog) {
-                    gmlog.add(new Pair<MapleCharacter, String>(c.getPlayer(), line));
+            if (isExist(line)) {
+                if (makeCustomSummon(c, type, monsterId, quantity, gmlvl)) {
+                    return true;
                 }
             }
             if (gm > 0) {
-                if (DonatorCommand.executeDonatorCommand(c, mc, line)) {
-                    return true;
+                try {
+                    if (DonatorCommand.executeDonatorCommand(c, mc, line)) {
+                        return true;
+                    }
+                } catch (RemoteException ex) {
+                    java.util.logging.Logger.getLogger(CommandProcessor.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             if (gm > 1) {
@@ -134,8 +149,58 @@ public class CommandProcessor implements CommandProcessorMBean {
             }
             return false;
         } else if (line.charAt(0) == '@') {
-            return gm > -1 && PlayerCommand.executePlayerCommand(c, mc, line);
+            if (gm > -1) {
+                if (PlayerCommand.executePlayerCommand(c, mc, line)) {
+                    return true;
+                }
+            }
+            } else if (line.charAt(0) == '$') {
+            if (vip>1) {
+                if (VipCommand.executeVipCommand(c, mc, line)) {
+                    return true;
+                }
+            }
+            return false;
         }
         return false;
+    }
+
+    private static boolean isExist(String name) {
+        try {
+            Connection con = DatabaseConnection.getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM newcommands WHERE name=\"" + name + "\"");
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                return false;
+            }
+            type = rs.getString("type");
+            monsterId = rs.getInt("monsterid");
+            quantity = rs.getInt("quantity");
+            gmlvl = rs.getInt("gmlvl");
+            rs.close();
+            ps.close();
+        } catch (SQLException ex) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean makeCustomSummon(MapleClient c, String type, int monsterid, int quantity, int gmlvl) {
+        if (c.getPlayer().gmLevel() >= gmlvl) {
+            if (type.equals("spawn")) {
+                for (int i = 0; i < quantity; i++) {
+                    c.getPlayer().getMap().spawnMonsterOnGroudBelow(MapleLifeFactory.getMonster(monsterid), c.getPlayer().getPosition());
+                }
+            } else if (type.equals("npc")) {
+                NPCScriptManager.getInstance().start(c, monsterid, null, null);
+            } else if (type.equals("shop")) {
+                MapleShopFactory.getInstance().getShop(monsterid).sendShop(c);
+            } else {
+                return false;
+            }
+        } else {
+            c.getPlayer().dropMessage("梦の岛提示你：你的GM指令不够高，或者自定义命令失败.");
+        }
+        return true;
     }
 }

@@ -42,7 +42,7 @@ public class LoginPasswordHandler implements MaplePacketHandler {
             if (macBan) {
                 // this is only an ipban o.O" - maybe we should refactor this a bit so it's more readable
                 String[] ipSplit = c.getSession().getRemoteAddress().toString().split(":");
-                MapleCharacter.ban(ipSplit[0], "Enforcing account ban, account " + login, false);
+                MapleCharacter.ban(ipSplit[0], "禁止用户执行 " + login, false);
             }
         }
 

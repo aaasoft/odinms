@@ -76,7 +76,13 @@ public class MapleShop {
                             int petId = MaplePet.createPet(itemId);
                             MapleInventoryManipulator.addById(c, itemId, quantity, "Pet was purchased.", null, petId);
                         } else {
-                            StringBuilder logInfo = new StringBuilder(c.getPlayer().getName() + " bought " + quantity + " for " + item.getPrice() * quantity + " from shop " + id);
+                            StringBuilder logInfo = new StringBuilder(c.getPlayer().getName());
+                            logInfo.append(" bought ");
+                            logInfo.append(quantity);
+                            logInfo.append(" for ");
+                            logInfo.append(item.getPrice() * quantity);
+                            logInfo.append(" from shop ");
+                            logInfo.append(id);
                             MapleInventoryManipulator.addById(c, itemId, quantity, logInfo.toString());
                         }
                         c.getPlayer().gainMeso(-(item.getPrice() * quantity), false);
@@ -103,7 +109,13 @@ public class MapleShop {
                                 int petId = MaplePet.createPet(itemId);
                                 MapleInventoryManipulator.addById(c, itemId, quantity, "Pet was purchased.", null, petId);
                             } else {
-                                StringBuilder logInfo = new StringBuilder(c.getPlayer().getName() + " bought " + quantity + " for " + item.getPrice() * quantity + " from shop " + id);
+                                StringBuilder logInfo = new StringBuilder(c.getPlayer().getName());
+                                logInfo.append(" bought ");
+                                logInfo.append(quantity);
+                                logInfo.append(" for ");
+                                logInfo.append(item.getPrice() * quantity);
+                                logInfo.append(" from shop ");
+                                logInfo.append(id);
                                 MapleInventoryManipulator.addById(c, itemId, quantity, logInfo.toString());
                             }
                             c.getPlayer().gainMeso(diff, false);
@@ -127,7 +139,7 @@ public class MapleShop {
             quantity = item.getQuantity();
         }
         if (quantity < 0) {
-            AutobanManager.getInstance().addPoints(c, 1000, 0, "Selling " + quantity + " " + item.getItemId() + " (" + type.name() + "/" + slot + ")");
+            AutobanManager.getInstance().addPoints(c, 1000, 0, "Selling " + quantity + " " +  item.getItemId() + " (" + type.name() + "/" + slot + ")");
             return;
         }
         short iQuant = item.getQuantity();
@@ -161,10 +173,12 @@ public class MapleShop {
             return;
         }
         short slotMax = ii.getSlotMax(c, item.getItemId());
+
         if (item.getQuantity() < 0) {
             log.warn(c.getPlayer().getName() + " is trying to recharge " + item.getItemId() + " with quantity " + item.getQuantity());
         }
         if (item.getQuantity() < slotMax) {
+            // calc price ;_;
             int price = (int) Math.round(ii.getPrice(item.getItemId()) * (slotMax - item.getQuantity()));
             if (c.getPlayer().getMeso() >= price) {
                 item.setQuantity(slotMax);
@@ -232,6 +246,7 @@ public class MapleShop {
         } catch (SQLException e) {
             log.error("Could not load shop", e);
         }
+
         return ret;
     }
 

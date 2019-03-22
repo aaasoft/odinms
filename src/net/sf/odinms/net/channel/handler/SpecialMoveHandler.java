@@ -22,9 +22,11 @@ public class SpecialMoveHandler extends AbstractMaplePacketHandler {
 
 	@Override
 	public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
+		// [53 00] [12 62] [AA 01] [6B 6A 23 00] [1E] [BA 00] [97 00] 00
 		short oldX = slea.readShort();
 		short oldY = slea.readShort();
 		int skillid = slea.readInt();
+		// seems to be skilllevel for movement skills and -32748 for buffs
 		Point pos = null;
 		int __skillLevel = slea.readByte();
 		ISkill skill = SkillFactory.getSkill(skillid);

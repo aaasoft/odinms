@@ -49,7 +49,7 @@ public class MapleMount {
             case 1902009:
                 return 5; //NX ones
             default:
-                return 0;
+                return 0; //whatever, it won't get to this anyway unless there's a new patch that adds mounts
         }
     }
 

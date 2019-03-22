@@ -127,7 +127,7 @@ public class MobSkill {
             case 124: // Curse TODO
                 break;
             case 125:
-                disease = MapleDisease.POISON;
+                //disease = MapleDisease.POISON;
                 break;
             case 126: // Slow
                 disease = MapleDisease.SLOW;

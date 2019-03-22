@@ -1,6 +1,7 @@
 package net.sf.odinms.scripting.quest;
 
 /**
+ *
  * @author RMZero213
  */
 

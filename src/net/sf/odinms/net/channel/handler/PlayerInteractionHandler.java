@@ -23,6 +23,15 @@ public class PlayerInteractionHandler extends AbstractMaplePacketHandler {
 
     private enum Action {
 
+        //CREATE(0x00),
+        //INVITE(0x02),
+        //DECLINE(0x03),
+        //VISIT(0x04),
+        //CHAT(0x06),
+        //EXIT(0x0A),
+        //OPEN(0x0B),
+        //SET_ITEMS(0x0E),
+        //SET_MESO(0x0F),
         CREATE(0),
         INVITE(2),
         DECLINE(3),
@@ -119,6 +128,7 @@ public class PlayerInteractionHandler extends AbstractMaplePacketHandler {
         } else if (mode == Action.DECLINE.getCode()) {
             MapleTrade.declineTrade(c.getPlayer());
         } else if (mode == Action.VISIT.getCode()) {
+            // we will ignore the trade oids for now
             if (c.getPlayer().getTrade() != null && c.getPlayer().getTrade().getPartner() != null) {
                 MapleTrade.visitTrade(c.getPlayer(), c.getPlayer().getTrade().getPartner().getChr());
             } else {
@@ -144,9 +154,11 @@ public class PlayerInteractionHandler extends AbstractMaplePacketHandler {
                             c.getPlayer().setMiniGame(game);
                             game.sendMatchCard(c, game.getPieceType());
                         }
+                    // TODO: Make sendMiniGame() variable so it can be used for both omok and match cards
                     } else {
                         c.getPlayer().getClient().getSession().write(MaplePacketCreator.getMiniGameFull());
                     }
+
                 }
             }
         } else if (mode == Action.CHAT.getCode()) { // chat lol
@@ -171,6 +183,10 @@ public class PlayerInteractionHandler extends AbstractMaplePacketHandler {
                 MapleMiniGame game = c.getPlayer().getMiniGame();
                 if (shop != null) {
                     c.getPlayer().setPlayerShop(null);
+                    //if (shop.isOwner(c.getPlayer())) {
+                    //c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeCharBox(c.getPlayer()));
+                    //shop.removeVisitors();
+                    // return the items not sold
                     if (shop.isOwner(c.getPlayer())) {
                         c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.removeCharBox(c.getPlayer()));
                         for (MaplePlayerShopItem item : shop.getItems()) {
@@ -221,6 +237,7 @@ public class PlayerInteractionHandler extends AbstractMaplePacketHandler {
                 c.getPlayer().getMap().broadcastMessage(MaplePacketCreator.addMatchCardBox(game.getOwner(), 2, 1));
                 game.setStarted(1);
             }
+
         } else if (mode == Action.GIVE_UP.getCode()) {
             MapleMiniGame game = c.getPlayer().getMiniGame();
             if (game.getGameType().equals("omok")) {
@@ -264,10 +281,13 @@ public class PlayerInteractionHandler extends AbstractMaplePacketHandler {
             int x = slea.readInt(); // x point
             int y = slea.readInt(); // y point
             int type = slea.readByte(); // piece ( 1 or 2; Owner has one piece, visitor has another, it switches every game.)
-            c.getPlayer().getMiniGame().setPiece(x, y, type, c.getPlayer());
+
+            MapleMiniGame game = c.getPlayer().getMiniGame();
+            game.setPiece(x, y, type, c.getPlayer());
         } else if (mode == Action.SELECT_CARD.getCode()) {
             int turn = slea.readByte(); // 1st turn = 1; 2nd turn = 0
             int slot = slea.readByte(); // slot
+
             MapleMiniGame game = c.getPlayer().getMiniGame();
             int firstslot = game.getFirstSlot();
             if (turn == 1) {
@@ -316,6 +336,8 @@ public class PlayerInteractionHandler extends AbstractMaplePacketHandler {
                     }
                     tradeItem.setPosition(targetSlot);
                     c.getPlayer().getTrade().addItem(tradeItem);
+//                } else if (quantity < 0) {
+//					log.info("[h4x] {} Trading negative amounts of an item", c.getPlayer().getName());
                     return;
                 }
             }

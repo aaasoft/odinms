@@ -2,11 +2,13 @@ package net.sf.odinms.net.channel.handler;
 
 import static net.sf.odinms.client.BuddyList.BuddyOperation.ADDED;
 import static net.sf.odinms.client.BuddyList.BuddyOperation.DELETED;
+
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import net.sf.odinms.client.BuddyList;
 import net.sf.odinms.client.BuddylistEntry;
 import net.sf.odinms.client.CharacterNameAndId;
@@ -68,6 +70,20 @@ public class BuddylistModifyHandler extends AbstractMaplePacketHandler {
         BuddyList buddylist = player.getBuddylist();
         if (mode == 1) { // add
             String addName = slea.readMapleAsciiString();
+            Connection con = DatabaseConnection.getConnection();
+            try {
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM characters WHERE gm > 0 AND name = ?");
+                ps.setString(1, addName);
+                ResultSet rs = ps.executeQuery();
+
+                if (rs.next() && !player.isGM()) {
+                    player.dropMessage(1, "不能让你加GM哦~~囧");
+                    return;
+                }
+
+                rs.close();
+                ps.close();
+            } catch (SQLException sqlE) {}
             BuddylistEntry ble = buddylist.get(addName);
             if (ble != null && !ble.isVisible()) {
                 c.getSession().write(MaplePacketCreator.buddylistMessage((byte) 13));
@@ -92,7 +108,6 @@ public class BuddylistModifyHandler extends AbstractMaplePacketHandler {
                             ChannelWorldInterface channelInterface = worldInterface.getChannelInterface(channel);
                             buddyAddResult = channelInterface.requestBuddyAdd(addName, c.getChannel(), player.getId(), player.getName());
                         } else {
-                            Connection con = DatabaseConnection.getConnection();
                             PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) as buddyCount FROM buddies WHERE characterid = ? AND pending = 0");
                             ps.setInt(1, charWithId.getId());
                             ResultSet rs = ps.executeQuery();
@@ -125,7 +140,6 @@ public class BuddylistModifyHandler extends AbstractMaplePacketHandler {
                                 displayChannel = channel;
                                 notifyRemoteChannel(c, channel, otherCid, ADDED);
                             } else if (buddyAddResult != BuddyAddResult.ALREADY_ON_LIST && channel == -1) {
-                                Connection con = DatabaseConnection.getConnection();
                                 PreparedStatement ps = con.prepareStatement("INSERT INTO buddies (characterid, `buddyid`, `pending`) VALUES (?, ?, 1)");
                                 ps.setInt(1, charWithId.getId());
                                 ps.setInt(2, player.getId());

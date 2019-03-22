@@ -54,7 +54,8 @@ import org.slf4j.LoggerFactory;
 public class MapleMap {
 
     private static final int MAX_OID = 20000;
-    private static final List<MapleMapObjectType> rangedMapobjectTypes = Arrays.asList(MapleMapObjectType.ITEM, MapleMapObjectType.MONSTER, MapleMapObjectType.DOOR, MapleMapObjectType.SUMMON, MapleMapObjectType.REACTOR);
+    private static final List<MapleMapObjectType> rangedMapobjectTypes = Arrays.asList(MapleMapObjectType.ITEM,
+            MapleMapObjectType.MONSTER, MapleMapObjectType.DOOR, MapleMapObjectType.SUMMON, MapleMapObjectType.REACTOR);
     private Map<Integer, MapleMapObject> mapobjects = new LinkedHashMap<Integer, MapleMapObject>();
     private Collection<SpawnPoint> monsterSpawn = new LinkedList<SpawnPoint>();
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
@@ -79,7 +80,7 @@ public class MapleMap {
     private int timeLimit;
     private static Logger log = LoggerFactory.getLogger(MapleMap.class);
     private MapleMapTimer mapTimer = null;
-    private int dropLife = 180000;
+    private int dropLife = 60000;
     private int decHP = 0;
     private int protectItem = 0;
     private boolean town;
@@ -98,22 +99,8 @@ public class MapleMap {
             } else {
                 this.monsterRate = 1.0f - this.monsterRate;
             }
-            TimerManager.getInstance().register(new RespawnWorker(), 5001 + (int) (30.0 * Math.random()));
+            TimerManager.getInstance().register(new RespawnWorker(), 10000);
         }
-    }
-
-    public List<MapleMapObject> getMapObjectsInRect(Rectangle box, List<MapleMapObjectType> types) {
-        List<MapleMapObject> ret = new LinkedList<MapleMapObject>();
-        synchronized (mapobjects) {
-            for (MapleMapObject l : mapobjects.values()) {
-                if (types.contains(l.getType())) {
-                    if (box.contains(l.getPosition())) {
-                        ret.add(l);
-                    }
-                }
-            }
-        }
-        return ret;
     }
 
     public Collection<MapleCharacter> getNearestPvpChar(Point attacker, double maxRange, double maxHeight, Collection<MapleCharacter> chr) {
@@ -328,6 +315,7 @@ public class MapleMap {
         for (int i = 0; i < maxDrops; i++) {
             toDrop.add(monster.getDrop());
         }
+
         Set<Integer> alreadyDropped = new HashSet<Integer>();
         int htpendants = 0;
         int htstones = 0;
@@ -351,12 +339,14 @@ public class MapleMap {
                 alreadyDropped.add(toDrop.get(i));
             }
         }
+
         if (toDrop.size() > maxDrops) {
             toDrop = toDrop.subList(0, maxDrops);
         }
         Point[] toPoint = new Point[toDrop.size()];
         int shiftDirection = 0;
         int shiftCount = 0;
+
         int curX = Math.min(Math.max(monster.getPosition().x - 25 * (toDrop.size() / 2), footholds.getMinDropX() + 25), footholds.getMaxDropX() - toDrop.size() * 25);
         int curY = Math.max(monster.getPosition().y, footholds.getY1());
         while (shiftDirection < 3 && shiftCount < 1000) {
@@ -401,6 +391,12 @@ public class MapleMap {
                     if (dropOwner.getBuffedValue(MapleBuffStat.MESOUP) != null) {
                         tempmeso = (int) (tempmeso * dropOwner.getBuffedValue(MapleBuffStat.MESOUP).doubleValue() / 100.0);
                     }
+                    int addnx;
+                    addnx = 10;
+                    if (addnx > 0) {
+                    dropOwner.modifyCSPoints(1, addnx);
+                    dropOwner.getClient().getSession().write(MaplePacketCreator.serverNotice(5, "你从这个怪物身上获得 (" + addnx +")点点卷."));                                          }
+
                     final int meso = tempmeso * mesoRate * card;
                     if (meso > 0) {
                         final MapleMonster dropMonster = monster;
@@ -541,7 +537,7 @@ public class MapleMap {
             }
         }
         if (monster.getId() == 8810018) {
-            MaplePacket packet = MaplePacketCreator.serverNotice(6, "To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!");
+            MaplePacket packet = MaplePacketCreator.serverNotice(6, "哈哈，龙王死咯!!");
             try {
                 chr.getClient().getChannelServer().getInstance(chr.getClient().getChannel()).getWorldInterface().broadcastMessage(chr.getName(), packet.getBytes());
             } catch (RemoteException e) {
@@ -803,7 +799,13 @@ public class MapleMap {
     public MapleMapObject getMapObject(int oid) {
         return mapobjects.get(oid);
     }
-
+public void broadcastNonGmMessage(MapleCharacter source, MaplePacket packet) {
+        synchronized (characters) {
+            for (MapleCharacter chr : characters) {
+                if (chr != source && (!chr.isGM() || !chr.isHidden())) chr.getClient().getSession().write(packet);
+            }
+        }
+    }
     /**
      * returns a monster with the given oid, if no such monster exists returns null
      *
@@ -887,22 +889,22 @@ public class MapleMap {
 
                 public void sendPackets(MapleClient c) {
                     c.getSession().write(MaplePacketCreator.spawnMonster(monster, true));
-
+                    int removeAfter = monster.getRemoveAfter();
                     Random rand = new Random();
-
-                    if (monster.getRemoveAfter() > 0) {
+                    if (monster.getId() == 9300166) {
+                        removeAfter = rand.nextInt((4500) + 500);
+                    }
+                    if (removeAfter > 0) { // 9300166
                         ScheduledFuture<?> scheduleDeath = TimerManager.getInstance().schedule(new Runnable() {
 
                             @Override
                             public void run() {
-                                if (monster != null) {
-                                    killMonster(monster, (MapleCharacter) getAllPlayer().get(0), false, false, 3);
-                                }
+                                killMonster(monster, (MapleCharacter) getAllPlayer().get(0), false, false, 3);
                             }
-                        }, monster.getRemoveAfter());
+                        }, removeAfter);
                     }
                 }
-            }, null);
+            });
             updateMonsterController(monster);
         }
         spawnedMonstersOnMap.incrementAndGet();
@@ -1265,11 +1267,11 @@ public class MapleMap {
         if (summonStat != null) {
             MapleSummon summon = chr.getSummons().get(summonStat.getSourceId());
             summon.setPosition(chr.getPosition());
-            summon.sendSpawnData(chr.getClient());
-            chr.addVisibleMapObject(summon);
-            addMapObject(summon);
+           // summon.sendSpawnData(chr.getClient());
+           // chr.addVisibleMapObject(summon);
+           // addMapObject(summon);
             chr.getMap().spawnSummon(summon);
-            updateMapObjectVisibility(chr, summon);
+            //updateMapObjectVisibility(chr, summon);
         }
 
         if (mapEffect != null) {
@@ -1322,8 +1324,7 @@ public class MapleMap {
             if (summon.isPuppet()) {
                 chr.cancelBuffStats(MapleBuffStat.PUPPET);
             } else {
-                chr.cancelBuffStats(MapleBuffStat.SUMMON);
-//removeMapObject(summon);
+                   removeMapObject(summon);
             }
         }
     }
@@ -1406,6 +1407,12 @@ public class MapleMap {
     private void sendObjectPlacement(MapleClient mapleClient) {
         for (MapleMapObject o : mapobjects.values()) {
             if (isNonRangedType(o.getType())) {
+                // make sure not to spawn a dead reactor
+                // if (o.getType() == MapleMapObjectType.REACTOR) {
+                // if (reactors.get((MapleReactor) o)) {
+                // o.sendSpawnData(mapleClient);
+                // }
+                // } else
                 o.sendSpawnData(mapleClient);
             } else if (o.getType() == MapleMapObjectType.MONSTER) {
                 updateMonsterController((MapleMonster) o);
@@ -1516,6 +1523,7 @@ public class MapleMap {
         Point newpos = calcPointBelow(monster.getPosition());
         newpos.y -= 1;
         SpawnPoint sp = new SpawnPoint(monster, newpos, mobTime);
+
         monsterSpawn.add(sp);
         if (sp.shouldSpawn() || mobTime == -1) { // -1 does not respawn and should not either but force ONE spawn
             sp.spawnMonster(this);
@@ -1632,7 +1640,10 @@ public class MapleMap {
     public void setMapName(String mapName) {
         this.mapName = mapName;
     }
-
+    public int mobCount() {
+        List<MapleMapObject> players = getMapObjectsInRange(new Point(0,0), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.MONSTER));
+        return players.size();
+  }
     public String getStreetName() {
         return streetName;
     }
@@ -1798,8 +1809,9 @@ public class MapleMap {
             return 2;
         } else if (boat) {
             return 1;
+        } else {
+            return 0;
         }
-        return 0;
     }
 
     public void setBoat(boolean hasBoat) {

@@ -1,6 +1,7 @@
 package net.sf.odinms.net.channel.handler;
 
 import java.util.concurrent.ScheduledFuture;
+
 import net.sf.odinms.client.ISkill;
 import net.sf.odinms.client.MapleBuffStat;
 import net.sf.odinms.client.MapleCharacter;
@@ -30,6 +31,7 @@ public class CloseRangeDamageHandler extends AbstractDealDamageHandler {
         MapleCharacter player = c.getPlayer();
         MaplePacket packet = MaplePacketCreator.closeRangeAttack(player.getId(), attack.skill, attack.stance, attack.numAttackedAndDamage, attack.allDamage, attack.speed);
         player.getMap().broadcastMessage(player, packet, false, true);
+// handle combo orbconsume
         int numFinisherOrbs = 0;
         Integer comboBuff = player.getBuffedValue(MapleBuffStat.COMBO);
         ISkill energycharge = SkillFactory.getSkill(5110001);
@@ -40,14 +42,13 @@ public class CloseRangeDamageHandler extends AbstractDealDamageHandler {
             }
             player.handleOrbconsume();
         } else if (attack.numAttacked > 0) {
-            if ((player.getJob().equals(MapleJob.CRUSADER) || player.getJob().equals(MapleJob.HERO)) || ChannelServer.getInstance(c.getChannel()).getOrbGain()) {
-                if (attack.skill != 1111008 && comboBuff != null) { // shout should not give orbs
-                    player.handleOrbgain();
-                }
+            // handle combo orbgain
+            if (attack.skill != 1111008 && comboBuff != null) { // shout should not give orbs
+                player.handleOrbgain();
             }
-            if (energyChargeSkillLevel > 0 && player.getJob().equals(MapleJob.BUCCANEER) || player.getJob().equals(MapleJob.MARAUDER)) {
+            if (energyChargeSkillLevel > 0) {
                 for (int i = 0; i < attack.numAttacked; i++) {
-                    player.handleEnergyChargeGain();
+                   player.handleEnergyChargeGain();
                 }
             }
         }
@@ -119,6 +120,7 @@ public class CloseRangeDamageHandler extends AbstractDealDamageHandler {
             }
         }
         applyAttack(attack, player, maxdamage, attackCount);
+
         if (c.getPlayer().hasFakeChar()) {
             for (FakeCharacter ch : c.getPlayer().getFakeChars()) {
                 MaplePacket packett = MaplePacketCreator.closeRangeAttack(ch.getFakeChar().getId(), attack.skill, attack.stance,

@@ -65,7 +65,7 @@ public class RangedAttackHandler extends AbstractDealDamageHandler {
                 }
             }
         }
-        boolean soulArrow = player.getBuffedValue(MapleBuffStat.SOULARROW) != null || attack.skill == 5121002;
+        boolean soulArrow = player.getBuffedValue(MapleBuffStat.SOULARROW) != null;
         boolean shadowClaw = player.getBuffedValue(MapleBuffStat.SHADOW_CLAW) != null;
         if (!soulArrow && !shadowClaw) {
             int bulletConsume = bulletCount;

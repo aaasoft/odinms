@@ -2,7 +2,9 @@ package net.sf.odinms.net.world.guild;
 
 public class MapleGuildSummary implements java.io.Serializable {
 
+    public static final long serialVersionUID = 3565477792085301248L;
     private String name;
+    private int hideout;
     private short logoBG;
     private byte logoBGColor;
     private short logo;
@@ -10,6 +12,7 @@ public class MapleGuildSummary implements java.io.Serializable {
 
     public MapleGuildSummary(MapleGuild g) {
         name = g.getName();
+        hideout = g.getHideout();
         logoBG = (short) g.getLogoBG();
         logoBGColor = (byte) g.getLogoBGColor();
         logo = (short) g.getLogo();
@@ -26,6 +29,10 @@ public class MapleGuildSummary implements java.io.Serializable {
 
     public byte getLogoBGColor() {
         return logoBGColor;
+    }
+
+    public int getHideout() {
+        return hideout;
     }
 
     public short getLogo() {

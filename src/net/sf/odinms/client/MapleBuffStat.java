@@ -41,16 +41,18 @@ public enum MapleBuffStat implements LongValueHolder, Serializable {
 	SEAL(0x8000000000000L),
 	DARKNESS(0x10000000000000L),
 	COMBO(0x20000000000000L),
-	SUMMON(0x20000000000000L), //hack buffstat for summons
+	SUMMON(0x20000000000000L), //hack buffstat for summons ^.- (does/should not increase damage... hopefully <3)
 	WK_CHARGE(0x40000000000000L),
-	DRAGONBLOOD(0x80000000000000L), // another funny buffstat
+	DRAGONBLOOD(0x80000000000000L), // another funny buffstat...
 	HOLY_SYMBOL(0x100000000000000L),
 	MESOUP(0x200000000000000L),
 	SHADOWPARTNER(0x400000000000000L),
+	//0x8000000000000
 	PICKPOCKET(0x800000000000000L),
-	PUPPET(0x800000000000000L), // shares buffmask with pickpocket
+	PUPPET(0x800000000000000L), // HACK - shares buffmask with pickpocket - odin special ^.-
 	MESOGUARD(0x1000000000000000L),
 	WEAKEN(0x4000000000000000L),
+	//SWITCH_CONTROLS(0x8000000000000L)
     DASH(0x30000000),
     AURA(0x40000),
 	;

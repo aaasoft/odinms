@@ -12,8 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
+
 import net.sf.odinms.database.DatabaseConnection;
 import net.sf.odinms.net.channel.remote.ChannelWorldInterface;
 import net.sf.odinms.net.login.remote.LoginWorldInterface;
@@ -23,6 +25,7 @@ import net.sf.odinms.net.world.remote.CheaterData;
 import net.sf.odinms.net.world.remote.WorldChannelInterface;
 import net.sf.odinms.net.world.remote.WorldLocation;
 import net.sf.odinms.tools.CollectionUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +68,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
             rs.close();
             ps.close();
         } catch (SQLException ex) {
-            log.error("Could not retrieve channel configuration", ex);
+            log.error("无法检查这个通道", ex);
         }
         return ret;
     }
@@ -79,7 +82,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
                 WorldRegistryImpl.getInstance().deregisterLoginServer(wli);
             }
         }
-        log.info("Channel {} is online.", cb.getChannelId());
+        log.info("频道 {} 上线.", cb.getChannelId());
     }
 
     public boolean isReady() {
@@ -228,7 +231,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
     public void updateParty(int partyid, PartyOperation operation, MaplePartyCharacter target) throws RemoteException {
         MapleParty party = WorldRegistryImpl.getInstance().getParty(partyid);
         if (party == null) {
-            throw new IllegalArgumentException("no party with the specified partyid exists");
+            throw new IllegalArgumentException("任何一方与指定partyid存在");
         }
         switch (operation) {
             case JOIN:
@@ -246,7 +249,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
                 party.updateMember(target);
                 break;
             default:
-                throw new RuntimeException("Unhandeled updateParty operation " + operation.name());
+                throw new RuntimeException("准备开启 " + operation.name());
         }
         for (int i : WorldRegistryImpl.getInstance().getChannelServer()) {
             ChannelWorldInterface cwi = WorldRegistryImpl.getInstance().getChannel(i);
@@ -270,7 +273,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
     public void partyChat(int partyid, String chattext, String namefrom) throws RemoteException {
         MapleParty party = WorldRegistryImpl.getInstance().getParty(partyid);
         if (party == null) {
-            throw new IllegalArgumentException("no party with the specified partyid exists");
+            throw new IllegalArgumentException("任何一方与指定partyid存在");
         }
         for (int i : WorldRegistryImpl.getInstance().getChannelServer()) {
             ChannelWorldInterface cwi = WorldRegistryImpl.getInstance().getChannel(i);
@@ -443,7 +446,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
     public void leaveMessenger(int messengerid, MapleMessengerCharacter target) throws RemoteException {
         MapleMessenger messenger = WorldRegistryImpl.getInstance().getMessenger(messengerid);
         if (messenger == null) {
-            throw new IllegalArgumentException("No messenger with the specified messengerid exists");
+            throw new IllegalArgumentException("没有信使与指定messengerid存在");
         }
         int position = messenger.getPositionByName(target.getName());
         messenger.removeMember(target);
@@ -461,7 +464,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
     public void joinMessenger(int messengerid, MapleMessengerCharacter target, String from, int fromchannel) throws RemoteException {
         MapleMessenger messenger = WorldRegistryImpl.getInstance().getMessenger(messengerid);
         if (messenger == null) {
-            throw new IllegalArgumentException("No messenger with the specified messengerid exists");
+            throw new IllegalArgumentException("没有信使与指定messengerid存在");
         }
         messenger.addMember(target);
 
@@ -478,7 +481,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
     public void messengerChat(int messengerid, String chattext, String namefrom) throws RemoteException {
         MapleMessenger messenger = WorldRegistryImpl.getInstance().getMessenger(messengerid);
         if (messenger == null) {
-            throw new IllegalArgumentException("No messenger with the specified messengerid exists");
+            throw new IllegalArgumentException("没有信使与指定messengerid存在");
         }
         for (int i : WorldRegistryImpl.getInstance().getChannelServer()) {
             ChannelWorldInterface cwi = WorldRegistryImpl.getInstance().getChannel(i);
@@ -518,7 +521,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
     public void silentLeaveMessenger(int messengerid, MapleMessengerCharacter target) throws RemoteException {
         MapleMessenger messenger = WorldRegistryImpl.getInstance().getMessenger(messengerid);
         if (messenger == null) {
-            throw new IllegalArgumentException("No messenger with the specified messengerid exists");
+            throw new IllegalArgumentException("没有信使与指定messengerid存在");
         }
         messenger.silentRemoveMember(target);
     }
@@ -526,7 +529,7 @@ public class WorldChannelInterfaceImpl extends UnicastRemoteObject implements Wo
     public void silentJoinMessenger(int messengerid, MapleMessengerCharacter target, int position) throws RemoteException {
         MapleMessenger messenger = WorldRegistryImpl.getInstance().getMessenger(messengerid);
         if (messenger == null) {
-            throw new IllegalArgumentException("No messenger with the specified messengerid exists");
+            throw new IllegalArgumentException("没有信使与指定messengerid存在");
         }
         messenger.silentAddMember(target, position);
     }

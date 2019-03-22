@@ -1,3 +1,24 @@
+/*
+	This file is part of the OdinMS Maple Story Server
+    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
+                       Matthias Butz <matze@odinms.de>
+                       Jan Christian Meyer <vimes@odinms.de>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License version 3
+    as published by the Free Software Foundation. You may not use, modify
+    or distribute this program under any other version of the
+    GNU Affero General Public License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package net.sf.odinms.net.channel.handler;
 
 import net.sf.odinms.client.MapleClient;
@@ -21,6 +42,7 @@ public class DueyActionHandler extends AbstractMaplePacketHandler {
 		byte type = slea.readByte();
 		boolean senditem = true;
 		boolean sendmesos = true;
+
 		if (type == MapleDueyActions.C_SEND_ITEM.getCode()) { //send item
 			byte invid = slea.readByte();
 			byte slot = slea.readByte();
@@ -32,6 +54,7 @@ public class DueyActionHandler extends AbstractMaplePacketHandler {
 			String name = slea.readMapleAsciiString();
 			slea.readByte();
 			MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
+
 			if (c.getChannelServer().characterNameExists(name)) {
 				if (sendmesos && !ii.isDropRestricted(invid)) {
 					c.getPlayer().gainMeso(-mesos, false);
@@ -43,7 +66,8 @@ public class DueyActionHandler extends AbstractMaplePacketHandler {
 			} else {
 				c.getSession().write(MaplePacketCreator.sendDueyAction(MapleDueyActions.S_ERROR_SENDING.getCode()));
 			}
-		} else if (type == MapleDueyActions.C_CLOSE_DUEY.getCode()) {
+		} else if (type == MapleDueyActions.C_CLOSE_DUEY.getCode()) { //close duey
+			//do nothing
 		}
 	}
 }

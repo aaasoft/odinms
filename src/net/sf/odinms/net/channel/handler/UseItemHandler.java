@@ -34,7 +34,7 @@ public class UseItemHandler extends AbstractMaplePacketHandler {
                 MapleInventoryManipulator.removeFromSlot(c, MapleInventoryType.USE, slot, (short) 1, false);
                 c.getSession().write(MaplePacketCreator.enableActions());
                 return;
-            } 
+            }
             if (ii.isTownScroll(itemId)) {
                 if (ii.getItemEffect(toUse.getItemId()).applyTo(c.getPlayer())) {
                     MapleInventoryManipulator.removeFromSlot(c, MapleInventoryType.USE, slot, (short) 1, false);
