@@ -642,11 +642,58 @@ public class MapleClient {
             }
             rs.close();
             ps.close();
+            
             ps = con.prepareStatement("DELETE FROM characters WHERE id = ?");
             ps.setInt(1, cid);
             ps.executeUpdate();
             ps.close();
-            ps = con.prepareStatement("DELETE FROM cheatlog, wishlist, eventstats, famelog, inventoryitems, keymap, queststatus, savedlocation, skillmacros, skills WHERE characterid = ?");
+            
+            ps = con.prepareStatement("DELETE FROM cheatlog WHERE id = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+            
+            ps = con.prepareStatement("DELETE FROM wishlist WHERE charid = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+            
+            ps = con.prepareStatement("DELETE FROM eventstats WHERE characterid = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+            
+            ps = con.prepareStatement("DELETE FROM famelog WHERE characterid = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+            
+            ps = con.prepareStatement("DELETE FROM inventoryitems WHERE characterid = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+            
+            ps = con.prepareStatement("DELETE FROM keymap WHERE characterid = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+            
+            ps = con.prepareStatement("DELETE FROM queststatus WHERE characterid = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+            
+            ps = con.prepareStatement("DELETE FROM savedlocations WHERE characterid = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+            
+            ps = con.prepareStatement("DELETE FROM skillmacros WHERE characterid = ?");
+            ps.setInt(1, cid);
+            ps.executeUpdate();
+            ps.close();
+
+            ps = con.prepareStatement("DELETE FROM skills WHERE characterid = ?");
             ps.setInt(1, cid);
             ps.executeUpdate();
             ps.close();
