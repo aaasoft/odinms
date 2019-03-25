@@ -1,0 +1,10 @@
+docker run\
+ -d\
+ --log-driver=none\
+ --restart=always\
+ --name MapleStory_62\
+ -v /etc/timezone:/etc/timezone\
+ -v /etc/localtime:/etc/localtime\
+ -v /data/maplestory_62:/root\
+ --network host\
+ java:6 /bin/bash /root/launch_all.sh
